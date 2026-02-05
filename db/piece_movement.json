@@ -1,0 +1,8 @@
+{
+  "1": {"name":"King","rays":[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]],"ray_limit":1},
+  "2": {"name":"Queen","rays":[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]],"ray_limit":null},
+  "3": {"name":"Rook","rays":[[1,0],[-1,0],[0,1],[0,-1]],"ray_limit":null},
+  "4": {"name":"Bishop","rays":[[1,1],[1,-1],[-1,1],[-1,-1]],"ray_limit":null},
+  "5": {"name":"Knight","leaps":[[1,2],[2,1],[2,-1],[1,-2],[-1,-2],[-2,-1],[-2,1],[-1,2]]},
+  "6": {"name":"Pawn","white":{"move_only":[[0,-1]],"capture_only":[[-1,-1],[1,-1]],"first_move":{"rays":[[0,-1]],"ray_limit":2}},"black":{"move_only":[[0,1]],"capture_only":[[-1,1],[1,1]],"first_move":{"rays":[[0,1]],"ray_limit":2}}}
+}
