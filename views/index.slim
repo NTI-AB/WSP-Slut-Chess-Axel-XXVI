@@ -1,0 +1,10 @@
+h1 Pieces
+
+ul
+  - @pieces.each do |piece|
+    li
+      a href="/pieces/#{piece['id']}" = "#{piece['name']} (##{piece['id']})"
+      |  - 
+      a href="/pieces/#{piece['id']}/edit" Edit
+      - if piece['description'] && !piece['description'].empty?
+        |  - #{piece['description']}

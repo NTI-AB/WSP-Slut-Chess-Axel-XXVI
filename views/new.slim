@@ -1,0 +1,88 @@
+h1 Create Piece
+
+form action="/pieces" method="post"
+  p
+    label for="name" Name
+    br
+    input#name type="text" name="name" required=true
+
+  p
+    label for="description" Description
+    br
+    textarea#description name="description" rows="4" cols="50"
+
+  h2 Special Attributes
+  - @powers.each do |power|
+    p
+      label
+        input type="checkbox" name="power_ids[]" value=power['id']
+        |  #{power['name']}
+        - if power['description'] && !power['description'].empty?
+          |  - #{power['description']}
+
+  h2 Movement Methods
+  - @movement_methods.each do |method|
+    fieldset
+      legend = method['name']
+
+      p
+        label
+          input type="checkbox" name="method_ids[]" value=method['id'] data-method-toggle=method['id']
+          |  Use this method
+
+      - if method['description'] && !method['description'].empty?
+        p = method['description']
+
+      div data-method-config=method['id'] style="display: none;"
+        p
+          strong Kind:
+          |  #{method['kind']}
+
+        - if method['supports_ray_limit'].to_i == 1
+          p
+            label for="ray_limit_#{method['id']}" Ray limit (blank = infinite)
+            br
+            input id="ray_limit_#{method['id']}" type="number" min="1" name="ray_limit[#{method['id']}]"
+
+        p
+          label for="mode_#{method['id']}" Mode
+          br
+          select id="mode_#{method['id']}" name="mode[#{method['id']}]"
+            option value="both" both
+            option value="move" move only
+            option value="capture" capture only
+
+        p
+          label for="color_scope_#{method['id']}" Color scope
+          br
+          select id="color_scope_#{method['id']}" name="color_scope[#{method['id']}]"
+            option value="any" any
+            option value="white" white
+            option value="black" black
+
+        p
+          label
+            input type="checkbox" name="first_move_only[#{method['id']}]" value="1"
+            |  First move only
+
+  p
+    button type="submit" Create
+    |  
+    a href="/pieces" Cancel
+
+javascript:
+  document.addEventListener('DOMContentLoaded', function () {
+    var toggles = document.querySelectorAll('[data-method-toggle]');
+
+    function sync(toggle) {
+      var methodId = toggle.getAttribute('data-method-toggle');
+      var panel = document.querySelector('[data-method-config="' + methodId + '"]');
+      if (!panel) return;
+      panel.style.display = toggle.checked ? 'block' : 'none';
+    }
+
+    toggles.forEach(function (toggle) {
+      sync(toggle);
+      toggle.addEventListener('change', function () { sync(toggle); });
+    });
+  });
