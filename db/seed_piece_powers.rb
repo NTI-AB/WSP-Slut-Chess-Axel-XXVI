@@ -1,13 +1,14 @@
 require 'sqlite3'
+require 'json'
 
 DB_PATH = 'databas.db'
 PIECE_POWER_SEEDS = {
-  1 => [3],
-  2 => [1, 2],
-  3 => [1],
-  4 => [2],
-  5 => [4],
-  6 => [5]
+  1 => [],
+  2 => [],
+  3 => [],
+  4 => [],
+  5 => [],
+  6 => []
 }.freeze
 
 db = SQLite3::Database.new(DB_PATH)
@@ -15,37 +16,25 @@ db.execute('PRAGMA foreign_keys = ON')
 
 def seed!(db)
   puts "Using db file: #{DB_PATH}"
-  puts 'Seeding piece_powers...'
-  create_tables(db)
-  clear_table(db)
-  populate_piece_powers(db)
-  puts "Done seeding piece_powers!"
+  puts 'Seeding piece power_ids JSON column...'
+  ensure_column_exists(db)
+  populate_piece_power_ids(db)
+  puts 'Done seeding piece power_ids!'
 end
 
-def create_tables(db)
-  db.execute <<~SQL
-    CREATE TABLE IF NOT EXISTS piece_powers (
-      piece_id INTEGER NOT NULL,
-      power_id INTEGER NOT NULL,
-      PRIMARY KEY (piece_id, power_id),
-      FOREIGN KEY (piece_id) REFERENCES pieces(id) ON DELETE CASCADE,
-      FOREIGN KEY (power_id) REFERENCES powers(id) ON DELETE CASCADE
-    )
-  SQL
+def ensure_column_exists(db)
+  columns = db.execute('PRAGMA table_info(pieces)').map { |row| row[1] }
+  return if columns.include?('power_ids')
+
+  db.execute("ALTER TABLE pieces ADD COLUMN power_ids TEXT NOT NULL DEFAULT '[]'")
 end
 
-def clear_table(db)
-  db.execute('DELETE FROM piece_powers')
-end
-
-def populate_piece_powers(db)
+def populate_piece_power_ids(db)
   PIECE_POWER_SEEDS.each do |piece_id, power_ids|
-    power_ids.each do |power_id|
-      db.execute(
-        'INSERT INTO piece_powers (piece_id, power_id) VALUES (?, ?)',
-        [piece_id, power_id]
-      )
-    end
+    db.execute(
+      'UPDATE pieces SET power_ids = ? WHERE id = ?',
+      [JSON.generate(power_ids), piece_id]
+    )
   end
 end
 

@@ -5,52 +5,68 @@ require 'time'
 DB_PATH = 'databas.db'
 MOVEMENT_JSON_PATH = File.join(__dir__, 'piece_movement.json')
 DEFAULT_PREVIEW_BOARD_JSON = '{"size":8,"placed":[]}'
+DEFAULT_POWER_IDS_JSON = '[]'
 
-MOVEMENT_PATTERNS = [
+MOVEMENT_METHODS = [
   {
     id: 1,
-    name: 'orthogonal_ray_unlimited',
+    key: 'orthogonal_rays',
+    name: 'Orthogonal Rays',
+    kind: 'ray',
+    supports_ray_limit: 1,
     description: 'Moves along rank/file rays with no fixed distance limit.',
-    movement: {
-      name: 'orthogonal_ray_unlimited',
+    definition: {
+      name: 'orthogonal_rays',
       rays: [[1, 0], [-1, 0], [0, 1], [0, -1]],
       ray_limit: nil
     }
   },
   {
     id: 2,
-    name: 'diagonal_ray_unlimited',
+    key: 'diagonal_rays',
+    name: 'Diagonal Rays',
+    kind: 'ray',
+    supports_ray_limit: 1,
     description: 'Moves along diagonal rays with no fixed distance limit.',
-    movement: {
-      name: 'diagonal_ray_unlimited',
+    definition: {
+      name: 'diagonal_rays',
       rays: [[1, 1], [1, -1], [-1, 1], [-1, -1]],
       ray_limit: nil
     }
   },
   {
     id: 3,
-    name: 'king_step_any_direction',
+    key: 'adjacent_any_direction',
+    name: 'Adjacent Any Direction',
+    kind: 'ray',
+    supports_ray_limit: 1,
     description: 'One-square step in any direction.',
-    movement: {
-      name: 'king_step_any_direction',
+    definition: {
+      name: 'adjacent_any_direction',
       rays: [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]],
       ray_limit: 1
     }
   },
   {
     id: 4,
-    name: 'knight_leap',
+    key: 'knight_leap',
+    name: 'Knight Leap',
+    kind: 'leap',
+    supports_ray_limit: 0,
     description: 'L-shaped leap movement.',
-    movement: {
+    definition: {
       name: 'knight_leap',
       leaps: [[1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1], [-2, 1], [-1, 2]]
     }
   },
   {
     id: 5,
-    name: 'pawn_core_directional',
+    key: 'pawn_core_directional',
+    name: 'Pawn Core Directional',
+    kind: 'rule',
+    supports_ray_limit: 0,
     description: 'Directional pawn movement and capture rules.',
-    movement: {
+    definition: {
       name: 'pawn_core_directional',
       white: {
         move_only: [[0, -1]],
@@ -67,21 +83,34 @@ MOVEMENT_PATTERNS = [
 ].freeze
 
 PIECE_SEEDS = [
-  { id: 1, name: 'King', description: 'Moves one square in any direction.' },
-  { id: 2, name: 'Queen', description: 'Moves any number of squares in any direction.' },
-  { id: 3, name: 'Rook', description: 'Moves any number of squares orthogonally.' },
-  { id: 4, name: 'Bishop', description: 'Moves any number of squares diagonally.' },
-  { id: 5, name: 'Knight', description: 'Moves in an L-shape, jumping over pieces.' },
-  { id: 6, name: 'Pawn', description: 'Moves forward, captures diagonally; direction depends on color.' }
+  { id: 1, name: 'King', description: 'Moves one square in any direction.', power_ids: [] },
+  { id: 2, name: 'Queen', description: 'Moves any number of squares in any direction.', power_ids: [] },
+  { id: 3, name: 'Rook', description: 'Moves any number of squares orthogonally.', power_ids: [] },
+  { id: 4, name: 'Bishop', description: 'Moves any number of squares diagonally.', power_ids: [] },
+  { id: 5, name: 'Knight', description: 'Moves in an L-shape, jumping over pieces.', power_ids: [] },
+  { id: 6, name: 'Pawn', description: 'Moves forward, captures diagonally; direction depends on color.', power_ids: [] }
 ].freeze
 
-PIECE_POWER_SEEDS = {
-  1 => [3],
-  2 => [1, 2],
-  3 => [1],
-  4 => [2],
-  5 => [4],
-  6 => [5]
+POWERS = [
+  { id: 1, name: 'Doomfist Smash', description: 'Stuns on capture.' },
+  { id: 2, name: 'Sniper Shot', description: 'Can capture while stationary.' },
+  { id: 3, name: 'Juggernaut Charge', description: 'Must move to the furthest reachable square.' },
+  { id: 4, name: 'Assassin Jump', description: 'Jump capture behavior.' },
+  { id: 5, name: 'Catapult Launch', description: 'Can launch an adjacent ally.' },
+  { id: 6, name: 'Wraith Possession', description: 'Possession behavior.' },
+  { id: 7, name: 'Berserker Chain', description: 'Can chain captures.' }
+].freeze
+
+PIECE_MOVE_SEEDS = {
+  1 => [{ movement_method_id: 3, ray_limit: 1, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  2 => [
+    { movement_method_id: 1, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 },
+    { movement_method_id: 2, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }
+  ],
+  3 => [{ movement_method_id: 1, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  4 => [{ movement_method_id: 2, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  5 => [{ movement_method_id: 4, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  6 => [{ movement_method_id: 5, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }]
 }.freeze
 
 db = SQLite3::Database.new(DB_PATH)
@@ -93,12 +122,14 @@ def seed!(db)
   drop_tables(db)
   puts 'Creating tables...'
   create_tables(db)
-  puts 'Populating movement patterns...'
+  puts 'Populating movement methods...'
+  populate_movement_methods(db)
+  puts 'Populating powers...'
   populate_powers(db)
   puts 'Populating pieces...'
   populate_pieces(db)
-  puts 'Populating piece_powers...'
-  populate_piece_powers(db)
+  puts 'Populating piece_moves...'
+  populate_piece_moves(db)
   puts 'Writing piece_movement.json...'
   write_movement_json
   puts 'Done seeding the database!'
@@ -107,6 +138,8 @@ end
 def drop_tables(db)
   db.execute('DROP TABLE IF EXISTS piece_powers')
   db.execute('DROP TABLE IF EXISTS powers')
+  db.execute('DROP TABLE IF EXISTS piece_moves')
+  db.execute('DROP TABLE IF EXISTS movement_methods')
   db.execute('DROP TABLE IF EXISTS pieces')
 end
 
@@ -120,18 +153,24 @@ def create_tables(db)
       description TEXT,
       image_path TEXT,
       is_public INTEGER NOT NULL DEFAULT 0 CHECK (is_public IN (0, 1)),
+      power_ids TEXT NOT NULL DEFAULT '[]',
       preview_board_json TEXT NOT NULL DEFAULT '{"size":8,"placed":[]}',
-      stun_on_capture INTEGER NOT NULL DEFAULT 0 CHECK (stun_on_capture IN (0, 1)),
-      stationary_capture INTEGER NOT NULL DEFAULT 0 CHECK (stationary_capture IN (0, 1)),
-      furthest_only INTEGER NOT NULL DEFAULT 0 CHECK (furthest_only IN (0, 1)),
-      jump_capture INTEGER NOT NULL DEFAULT 0 CHECK (jump_capture IN (0, 1)),
-      launch_ally INTEGER NOT NULL DEFAULT 0 CHECK (launch_ally IN (0, 1)),
-      possession INTEGER NOT NULL DEFAULT 0 CHECK (possession IN (0, 1)),
-      berserk_chain INTEGER NOT NULL DEFAULT 0 CHECK (berserk_chain IN (0, 1)),
       deleted_at DATETIME,
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL,
       FOREIGN KEY (source_piece_id) REFERENCES pieces(id) ON DELETE SET NULL
+    )
+  SQL
+
+  db.execute <<~SQL
+    CREATE TABLE IF NOT EXISTS movement_methods (
+      id INTEGER PRIMARY KEY,
+      key TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL UNIQUE,
+      kind TEXT NOT NULL,
+      vectors_json TEXT NOT NULL,
+      supports_ray_limit INTEGER NOT NULL DEFAULT 0 CHECK (supports_ray_limit IN (0, 1)),
+      description TEXT
     )
   SQL
 
@@ -144,21 +183,39 @@ def create_tables(db)
   SQL
 
   db.execute <<~SQL
-    CREATE TABLE IF NOT EXISTS piece_powers (
+    CREATE TABLE IF NOT EXISTS piece_moves (
+      id INTEGER PRIMARY KEY,
       piece_id INTEGER NOT NULL,
-      power_id INTEGER NOT NULL,
-      PRIMARY KEY (piece_id, power_id),
+      movement_method_id INTEGER,
+      name TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      vectors_json TEXT NOT NULL,
+      ray_limit INTEGER,
+      mode TEXT NOT NULL DEFAULT 'both' CHECK (mode IN ('move', 'capture', 'both')),
+      color_scope TEXT NOT NULL DEFAULT 'any' CHECK (color_scope IN ('any', 'white', 'black')),
+      first_move_only INTEGER NOT NULL DEFAULT 0 CHECK (first_move_only IN (0, 1)),
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL,
       FOREIGN KEY (piece_id) REFERENCES pieces(id) ON DELETE CASCADE,
-      FOREIGN KEY (power_id) REFERENCES powers(id) ON DELETE CASCADE
+      FOREIGN KEY (movement_method_id) REFERENCES movement_methods(id) ON DELETE SET NULL
     )
   SQL
 end
 
+def populate_movement_methods(db)
+  MOVEMENT_METHODS.each do |method|
+    db.execute(
+      'INSERT INTO movement_methods (id, key, name, kind, vectors_json, supports_ray_limit, description) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [method[:id], method[:key], method[:name], method[:kind], JSON.generate(method[:definition]), method[:supports_ray_limit], method[:description]]
+    )
+  end
+end
+
 def populate_powers(db)
-  MOVEMENT_PATTERNS.each do |pattern|
+  POWERS.each do |power|
     db.execute(
       'INSERT INTO powers (id, name, description) VALUES (?, ?, ?)',
-      [pattern[:id], pattern[:name], pattern[:description]]
+      [power[:id], power[:name], power[:description]]
     )
   end
 end
@@ -171,10 +228,8 @@ def populate_pieces(db)
       <<~SQL,
         INSERT INTO pieces (
           id, owner_id, source_piece_id, name, description, image_path, is_public,
-          preview_board_json, stun_on_capture, stationary_capture, furthest_only,
-          jump_capture, launch_ally, possession, berserk_chain, deleted_at,
-          created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          power_ids, preview_board_json, deleted_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       SQL
       [
         piece[:id],
@@ -184,14 +239,8 @@ def populate_pieces(db)
         piece[:description],
         nil,
         1,
+        piece[:power_ids].empty? ? DEFAULT_POWER_IDS_JSON : JSON.generate(piece[:power_ids]),
         DEFAULT_PREVIEW_BOARD_JSON,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
         nil,
         now,
         now
@@ -200,20 +249,36 @@ def populate_pieces(db)
   end
 end
 
-def populate_piece_powers(db)
-  PIECE_POWER_SEEDS.each do |piece_id, power_ids|
-    power_ids.each do |power_id|
+def populate_piece_moves(db)
+  method_map = MOVEMENT_METHODS.each_with_object({}) { |method, memo| memo[method[:id]] = method }
+  now = Time.now.utc.iso8601
+
+  PIECE_MOVE_SEEDS.each do |piece_id, moves|
+    moves.each do |move|
+      method = method_map.fetch(move[:movement_method_id])
       db.execute(
-        'INSERT INTO piece_powers (piece_id, power_id) VALUES (?, ?)',
-        [piece_id, power_id]
+        'INSERT INTO piece_moves (piece_id, movement_method_id, name, kind, vectors_json, ray_limit, mode, color_scope, first_move_only, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          piece_id,
+          method[:id],
+          method[:name],
+          method[:kind],
+          JSON.generate(method[:definition]),
+          move[:ray_limit],
+          move[:mode],
+          move[:color_scope],
+          move[:first_move_only],
+          now,
+          now
+        ]
       )
     end
   end
 end
 
 def write_movement_json
-  rules = MOVEMENT_PATTERNS.each_with_object({}) do |pattern, memo|
-    memo[pattern[:id]] = pattern[:movement]
+  rules = MOVEMENT_METHODS.each_with_object({}) do |method, memo|
+    memo[method[:id]] = method[:definition]
   end
 
   lines = rules.sort_by { |id, _| id.to_i }.map do |id, data|

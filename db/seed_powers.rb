@@ -2,64 +2,14 @@ require 'sqlite3'
 
 DB_PATH = 'databas.db'
 
-MOVEMENT_PATTERNS = [
-  {
-    id: 1,
-    name: 'orthogonal_ray_unlimited',
-    description: 'Moves along rank/file rays with no fixed distance limit.',
-    movement: {
-      name: 'orthogonal_ray_unlimited',
-      rays: [[1, 0], [-1, 0], [0, 1], [0, -1]],
-      ray_limit: nil
-    }
-  },
-  {
-    id: 2,
-    name: 'diagonal_ray_unlimited',
-    description: 'Moves along diagonal rays with no fixed distance limit.',
-    movement: {
-      name: 'diagonal_ray_unlimited',
-      rays: [[1, 1], [1, -1], [-1, 1], [-1, -1]],
-      ray_limit: nil
-    }
-  },
-  {
-    id: 3,
-    name: 'king_step_any_direction',
-    description: 'One-square step in any direction.',
-    movement: {
-      name: 'king_step_any_direction',
-      rays: [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]],
-      ray_limit: 1
-    }
-  },
-  {
-    id: 4,
-    name: 'knight_leap',
-    description: 'L-shaped leap movement.',
-    movement: {
-      name: 'knight_leap',
-      leaps: [[1, 2], [2, 1], [2, -1], [1, -2], [-1, -2], [-2, -1], [-2, 1], [-1, 2]]
-    }
-  },
-  {
-    id: 5,
-    name: 'pawn_core_directional',
-    description: 'Directional pawn movement and capture rules.',
-    movement: {
-      name: 'pawn_core_directional',
-      white: {
-        move_only: [[0, -1]],
-        capture_only: [[-1, -1], [1, -1]],
-        first_move: { rays: [[0, -1]], ray_limit: 2 }
-      },
-      black: {
-        move_only: [[0, 1]],
-        capture_only: [[-1, 1], [1, 1]],
-        first_move: { rays: [[0, 1]], ray_limit: 2 }
-      }
-    }
-  }
+POWERS = [
+  { id: 1, name: 'Doomfist Smash', description: 'Stuns on capture.' },
+  { id: 2, name: 'Sniper Shot', description: 'Can capture while stationary.' },
+  { id: 3, name: 'Juggernaut Charge', description: 'Must move to the furthest reachable square.' },
+  { id: 4, name: 'Assassin Jump', description: 'Jump capture behavior.' },
+  { id: 5, name: 'Catapult Launch', description: 'Can launch an adjacent ally.' },
+  { id: 6, name: 'Wraith Possession', description: 'Possession behavior.' },
+  { id: 7, name: 'Berserker Chain', description: 'Can chain captures.' }
 ].freeze
 
 db = SQLite3::Database.new(DB_PATH)
@@ -67,7 +17,7 @@ db.execute('PRAGMA foreign_keys = ON')
 
 def seed!(db)
   puts "Using db file: #{DB_PATH}"
-  puts 'Seeding movement-pattern powers...'
+  puts 'Seeding powers (special attributes)...'
   create_tables(db)
   clear_tables(db)
   populate_powers(db)
@@ -85,19 +35,14 @@ def create_tables(db)
 end
 
 def clear_tables(db)
-  begin
-    db.execute('DELETE FROM piece_powers')
-  rescue SQLite3::SQLException
-  end
-
   db.execute('DELETE FROM powers')
 end
 
 def populate_powers(db)
-  MOVEMENT_PATTERNS.each do |pattern|
+  POWERS.each do |power|
     db.execute(
       'INSERT INTO powers (id, name, description) VALUES (?, ?, ?)',
-      [pattern[:id], pattern[:name], pattern[:description]]
+      [power[:id], power[:name], power[:description]]
     )
   end
 end
