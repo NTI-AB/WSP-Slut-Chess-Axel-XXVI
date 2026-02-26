@@ -49,5 +49,7 @@ h2 Movement Rules
         - if move['method_description'] && !move['method_description'].empty?
           |  - #{move['method_description']}
 
+== slim :_piece_preview, locals: { preview_title: 'Move Preview Sandbox', preview_source: 'static', preview_piece_name: @piece['name'], preview_moves: @preview_piece_moves, preview_initial_size: 8 }
+
 p
   a href="/pieces" Back to pieces

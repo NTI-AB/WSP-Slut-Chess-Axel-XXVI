@@ -1,0 +1,87 @@
+- _preview_title = (defined?(preview_title) && preview_title) ? preview_title : 'Board Preview'
+- _preview_source = (defined?(preview_source) && preview_source) ? preview_source : 'static'
+- _preview_piece_name = (defined?(preview_piece_name) && preview_piece_name) ? preview_piece_name : 'Piece'
+- _preview_initial_size = ((defined?(preview_initial_size) && preview_initial_size) ? preview_initial_size : 8).to_i
+- _preview_initial_size = 8 if _preview_initial_size < 4
+- _preview_initial_size = 20 if _preview_initial_size > 20
+- _preview_moves = (defined?(preview_moves) && preview_moves) ? preview_moves : []
+- _root_attrs = { 'class' => 'piece-preview', 'data-piece-preview-root' => true, 'data-preview-source' => _preview_source, 'data-preview-piece-name' => _preview_piece_name }
+- _board_size_input_attrs = { 'id' => "preview_board_size_#{object_id}", 'type' => 'number', 'min' => '4', 'max' => '20', 'value' => _preview_initial_size, 'data-preview-board-size' => true }
+- _piece_color_select_attrs = { 'id' => "preview_piece_color_#{object_id}", 'data-preview-piece-color' => true }
+- _first_move_checkbox_attrs = { 'type' => 'checkbox', 'data-preview-first-move' => true }
+- _tool_piece_attrs = { 'type' => 'button', 'data-preview-tool' => 'piece', 'class' => 'is-active' }
+- _tool_ally_attrs = { 'type' => 'button', 'data-preview-tool' => 'ally' }
+- _tool_enemy_attrs = { 'type' => 'button', 'data-preview-tool' => 'enemy' }
+- _tool_erase_attrs = { 'type' => 'button', 'data-preview-tool' => 'erase' }
+- _reset_button_attrs = { 'type' => 'button', 'data-preview-reset-board' => true }
+- _clear_blockers_button_attrs = { 'type' => 'button', 'data-preview-clear-blockers' => true }
+- _status_attrs = { 'class' => 'piece-preview__status', 'data-preview-status' => true }
+- _moves_attrs = { 'class' => 'piece-preview__moves', 'data-preview-moves' => true }
+- _board_attrs = { 'class' => 'piece-preview__board', 'data-preview-board' => true, 'aria-label' => 'Piece movement preview board' }
+- _static_moves_script_attrs = { 'type' => 'application/json', 'data-preview-static-moves' => true }
+
+
+link rel="stylesheet" href="/piece_preview.css"
+script src="/piece_preview.js" defer=true
+
+section *_root_attrs
+  h2 = _preview_title
+
+  p
+    | Click the board to place the preview piece and blockers. Use ally/enemy blockers to test capture and blocked paths.
+
+  div class="piece-preview__controls"
+    p
+      label for="preview_board_size_#{object_id}" Board size
+      br
+      input *_board_size_input_attrs
+
+    p
+      label for="preview_piece_color_#{object_id}" Preview piece color
+      br
+      select *_piece_color_select_attrs
+        option value="white" white
+        option value="black" black
+
+    p
+      label
+        input *_first_move_checkbox_attrs
+        |  Treat as first move
+
+    p
+      strong Placement tool
+      br
+      span class="piece-preview__tool-buttons"
+        button *_tool_piece_attrs Place piece
+        button *_tool_ally_attrs Ally blocker
+        button *_tool_enemy_attrs Enemy blocker
+        button *_tool_erase_attrs Erase
+
+    p
+      button *_reset_button_attrs Reset board
+      |  
+      button *_clear_blockers_button_attrs Clear blockers
+
+  p *_status_attrs Loading preview...
+  p *_moves_attrs
+
+  div *_board_attrs
+
+  p class="piece-preview__legend"
+    span
+      | P = preview piece
+    span
+      | A = ally blocker
+    span
+      | E = enemy blocker
+    span
+      | Green = move
+    span
+      | Red = capture
+    span
+      | Purple = both
+
+  - if _preview_source == 'static'
+    script *_static_moves_script_attrs
+      == json_dump(_preview_moves)
+
