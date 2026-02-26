@@ -51,6 +51,72 @@ helpers do
     placeholders = (['?'] * selected_power_ids.length).join(',')
     db.execute("SELECT id FROM powers WHERE id IN (#{placeholders})", selected_power_ids).map { |row| row['id'].to_i }
   end
+
+  def parse_json_hash(raw)
+    value = JSON.parse(raw.to_s)
+    value.is_a?(Hash) ? value : {}
+  rescue JSON::ParserError
+    {}
+  end
+
+  def preview_piece_moves_payload(piece_moves)
+    piece_moves.map do |move|
+      {
+        id: move['id'],
+        movement_method_id: move['movement_method_id'],
+        name: move['name'],
+        kind: move['kind'],
+        vectors: parse_json_hash(move['vectors_json']),
+        ray_limit: move['ray_limit'],
+        mode: move['mode'],
+        color_scope: move['color_scope'],
+        first_move_only: move['first_move_only'].to_i == 1
+      }
+    end
+  end
+
+  def json_dump(value)
+    JSON.generate(value)
+  end
+
+  def normalized_mode(value)
+    mode = value.to_s
+    %w[move capture both].include?(mode) ? mode : 'both'
+  end
+
+  def normalized_color_scope(value)
+    color_scope = value.to_s
+    %w[any white black].include?(color_scope) ? color_scope : 'any'
+  end
+
+  def parsed_ray_limit_for_method(method, raw_limit)
+    return nil unless method['supports_ray_limit'].to_i == 1
+
+    value = raw_limit.to_s.strip
+    return nil if value.empty?
+
+    number = value.to_i
+    number.positive? ? number : nil
+  end
+
+  def insert_piece_move_row!(piece_id:, method:, ray_limit:, mode:, color_scope:, first_move_only:, now:)
+    db.execute(
+      'INSERT INTO piece_moves (piece_id, movement_method_id, name, kind, vectors_json, ray_limit, mode, color_scope, first_move_only, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        piece_id,
+        method['id'],
+        method['name'],
+        method['kind'],
+        method['vectors_json'],
+        ray_limit,
+        mode,
+        color_scope,
+        first_move_only,
+        now,
+        now
+      ]
+    )
+  end
 end
 
 after do
@@ -75,7 +141,7 @@ get '/pieces' do
 end
 
 get '/pieces/new' do
-  @movement_methods = db.execute('SELECT id, key, name, kind, supports_ray_limit, description FROM movement_methods ORDER BY id')
+  @movement_methods = db.execute('SELECT id, key, name, kind, vectors_json, supports_ray_limit, description FROM movement_methods ORDER BY id')
   @powers = db.execute('SELECT id, name, description FROM powers ORDER BY id')
   slim(:new)
 end
@@ -117,36 +183,37 @@ post '/pieces' do
     method = method_map[method_id]
     next unless method
 
-    raw_limit = params.fetch('ray_limit', {}).fetch(method_id.to_s, '').to_s.strip
-    ray_limit = nil
-    if method['supports_ray_limit'].to_i == 1 && !raw_limit.empty?
-      value = raw_limit.to_i
-      ray_limit = value.positive? ? value : nil
-    end
-
-    mode = params.dig('mode', method_id.to_s).to_s
-    mode = 'both' unless %w[move capture both].include?(mode)
-
-    color_scope = params.dig('color_scope', method_id.to_s).to_s
-    color_scope = 'any' unless %w[any white black].include?(color_scope)
-
+    ray_limit = parsed_ray_limit_for_method(method, params.fetch('ray_limit', {}).fetch(method_id.to_s, ''))
+    mode = normalized_mode(params.dig('mode', method_id.to_s))
+    color_scope = normalized_color_scope(params.dig('color_scope', method_id.to_s))
     first_move_only = params.dig('first_move_only', method_id.to_s) == '1' ? 1 : 0
 
-    db.execute(
-      'INSERT INTO piece_moves (piece_id, movement_method_id, name, kind, vectors_json, ray_limit, mode, color_scope, first_move_only, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [
-        piece_id,
-        method['id'],
-        method['name'],
-        method['kind'],
-        method['vectors_json'],
-        ray_limit,
-        mode,
-        color_scope,
-        first_move_only,
-        now,
-        now
-      ]
+    insert_piece_move_row!(
+      piece_id: piece_id,
+      method: method,
+      ray_limit: ray_limit,
+      mode: mode,
+      color_scope: color_scope,
+      first_move_only: first_move_only,
+      now: now
+    )
+
+    secondary_enabled = params.dig('secondary_mode_enabled', method_id.to_s) == '1'
+    next unless secondary_enabled
+    next unless method['supports_ray_limit'].to_i == 1
+    next unless %w[move capture].include?(mode)
+
+    secondary_mode = (mode == 'move' ? 'capture' : 'move')
+    secondary_ray_limit = parsed_ray_limit_for_method(method, params.fetch('secondary_ray_limit', {}).fetch(method_id.to_s, ''))
+
+    insert_piece_move_row!(
+      piece_id: piece_id,
+      method: method,
+      ray_limit: secondary_ray_limit,
+      mode: secondary_mode,
+      color_scope: color_scope,
+      first_move_only: first_move_only,
+      now: now
     )
   end
   db.commit
@@ -164,20 +231,36 @@ get '/pieces/:id/edit' do
   @piece = piece_by_id(id)
   halt 404, 'Piece not found' unless @piece
 
-  @movement_methods = db.execute('SELECT id, key, name, kind, supports_ray_limit, description FROM movement_methods ORDER BY id')
+  @movement_methods = db.execute('SELECT id, key, name, kind, vectors_json, supports_ray_limit, description FROM movement_methods ORDER BY id')
   @powers = db.execute('SELECT id, name, description FROM powers ORDER BY id')
   @selected_power_ids = parse_power_ids_json(@piece['power_ids'])
   @move_config_by_method_id = {}
+  @secondary_move_config_by_method_id = {}
+  move_rows_by_method_id = Hash.new { |hash, key| hash[key] = [] }
 
   db.execute(
-    'SELECT movement_method_id, ray_limit, mode, color_scope, first_move_only FROM piece_moves WHERE piece_id = ? ORDER BY id',
+    'SELECT id, movement_method_id, ray_limit, mode, color_scope, first_move_only FROM piece_moves WHERE piece_id = ? ORDER BY id',
     [id]
   ).each do |row|
     method_id = row['movement_method_id']
     next if method_id.nil?
-    next if @move_config_by_method_id.key?(method_id.to_i)
+    move_rows_by_method_id[method_id.to_i] << row
+  end
 
-    @move_config_by_method_id[method_id.to_i] = row
+  move_rows_by_method_id.each do |method_id, rows|
+    next if rows.empty?
+
+    primary = rows.first
+    secondary = nil
+
+    if %w[move capture].include?(primary['mode'].to_s)
+      secondary = rows.find do |row|
+        row['id'] != primary['id'] && row['mode'].to_s == (primary['mode'].to_s == 'move' ? 'capture' : 'move')
+      end
+    end
+
+    @move_config_by_method_id[method_id] = primary
+    @secondary_move_config_by_method_id[method_id] = secondary if secondary
   end
 
   slim :edit
@@ -216,36 +299,37 @@ post '/pieces/:id/update' do
     method = method_map[method_id]
     next unless method
 
-    raw_limit = params.fetch('ray_limit', {}).fetch(method_id.to_s, '').to_s.strip
-    ray_limit = nil
-    if method['supports_ray_limit'].to_i == 1 && !raw_limit.empty?
-      value = raw_limit.to_i
-      ray_limit = value.positive? ? value : nil
-    end
-
-    mode = params.dig('mode', method_id.to_s).to_s
-    mode = 'both' unless %w[move capture both].include?(mode)
-
-    color_scope = params.dig('color_scope', method_id.to_s).to_s
-    color_scope = 'any' unless %w[any white black].include?(color_scope)
-
+    ray_limit = parsed_ray_limit_for_method(method, params.fetch('ray_limit', {}).fetch(method_id.to_s, ''))
+    mode = normalized_mode(params.dig('mode', method_id.to_s))
+    color_scope = normalized_color_scope(params.dig('color_scope', method_id.to_s))
     first_move_only = params.dig('first_move_only', method_id.to_s) == '1' ? 1 : 0
 
-    db.execute(
-      'INSERT INTO piece_moves (piece_id, movement_method_id, name, kind, vectors_json, ray_limit, mode, color_scope, first_move_only, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [
-        id,
-        method['id'],
-        method['name'],
-        method['kind'],
-        method['vectors_json'],
-        ray_limit,
-        mode,
-        color_scope,
-        first_move_only,
-        now,
-        now
-      ]
+    insert_piece_move_row!(
+      piece_id: id,
+      method: method,
+      ray_limit: ray_limit,
+      mode: mode,
+      color_scope: color_scope,
+      first_move_only: first_move_only,
+      now: now
+    )
+
+    secondary_enabled = params.dig('secondary_mode_enabled', method_id.to_s) == '1'
+    next unless secondary_enabled
+    next unless method['supports_ray_limit'].to_i == 1
+    next unless %w[move capture].include?(mode)
+
+    secondary_mode = (mode == 'move' ? 'capture' : 'move')
+    secondary_ray_limit = parsed_ray_limit_for_method(method, params.fetch('secondary_ray_limit', {}).fetch(method_id.to_s, ''))
+
+    insert_piece_move_row!(
+      piece_id: id,
+      method: method,
+      ray_limit: secondary_ray_limit,
+      mode: secondary_mode,
+      color_scope: color_scope,
+      first_move_only: first_move_only,
+      now: now
     )
   end
   db.commit
@@ -275,13 +359,14 @@ get '/pieces/:id' do
   halt 404, 'Piece not found' unless @piece
 
   @piece_moves = db.execute(<<~SQL, [id])
-    SELECT pm.id, pm.name, pm.kind, pm.ray_limit, pm.mode, pm.color_scope, pm.first_move_only, pm.vectors_json,
+    SELECT pm.id, pm.movement_method_id, pm.name, pm.kind, pm.ray_limit, pm.mode, pm.color_scope, pm.first_move_only, pm.vectors_json,
            mm.name AS method_name, mm.description AS method_description
     FROM piece_moves pm
     LEFT JOIN movement_methods mm ON mm.id = pm.movement_method_id
     WHERE pm.piece_id = ?
     ORDER BY pm.id
   SQL
+  @preview_piece_moves = preview_piece_moves_payload(@piece_moves)
 
   power_ids = parse_power_ids_json(@piece['power_ids'])
   @special_powers = special_powers_by_ids(power_ids)

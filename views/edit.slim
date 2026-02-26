@@ -23,7 +23,9 @@ form action="/pieces/#{@piece['id']}/update" method="post"
   h2 Movement Methods
   - @movement_methods.each do |method|
     - config = @move_config_by_method_id[method['id'].to_i]
-    fieldset
+    - secondary_config = @secondary_move_config_by_method_id[method['id'].to_i]
+    - preview_method_attrs = { 'data-preview-method' => method['id'], 'data-preview-name' => method['name'], 'data-preview-kind' => method['kind'], 'data-preview-vectors' => method['vectors_json'] }
+    fieldset *preview_method_attrs
       legend = method['name']
 
       p
@@ -66,6 +68,28 @@ form action="/pieces/#{@piece['id']}/update" method="post"
             input type="checkbox" name="first_move_only[#{method['id']}]" value="1" checked=(!config.nil? && config['first_move_only'].to_i == 1)
             |  First move only
 
+        - if method['supports_ray_limit'].to_i == 1
+          - primary_mode = (config && config['mode']) || 'both'
+          - other_mode_label = primary_mode == 'move' ? 'capture' : 'move'
+          div data-secondary-ray-config=method['id'] style="display: none;"
+            p
+              label
+                input type="checkbox" name="secondary_mode_enabled[#{method['id']}]" value="1" checked=!secondary_config.nil?
+                |  Also add
+                |  
+                strong data-secondary-ray-mode-label=method['id'] = other_mode_label
+                |  rule with same vectors
+            p
+              label for="secondary_ray_limit_#{method['id']}"
+                | Ray limit for
+                |  
+                span data-secondary-ray-mode-label=method['id'] = other_mode_label
+                |  (blank = infinite)
+              br
+              input id="secondary_ray_limit_#{method['id']}" type="number" min="1" name="secondary_ray_limit[#{method['id']}]" value=(secondary_config && secondary_config['ray_limit'])
+
+  == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: @piece['name'], preview_initial_size: 8 }
+
   p
     button type="submit" Save changes
     |  
@@ -75,11 +99,42 @@ javascript:
   document.addEventListener('DOMContentLoaded', function () {
     var toggles = document.querySelectorAll('[data-method-toggle]');
 
+    function syncSecondary(methodId) {
+      var panel = document.querySelector('[data-secondary-ray-config="' + methodId + '"]');
+      if (!panel) return;
+
+      var modeInput = document.querySelector('[name="mode[' + methodId + ']"]');
+      if (!modeInput) {
+        panel.style.display = 'none';
+        return;
+      }
+
+      var mode = modeInput.value;
+      var visible = (mode === 'move' || mode === 'capture');
+      panel.style.display = visible ? 'block' : 'none';
+
+      var otherMode = mode === 'move' ? 'capture' : 'move';
+      panel.querySelectorAll('[data-secondary-ray-mode-label]').forEach(function (el) {
+        el.textContent = otherMode;
+      });
+    }
+
     function sync(toggle) {
       var methodId = toggle.getAttribute('data-method-toggle');
       var panel = document.querySelector('[data-method-config="' + methodId + '"]');
       if (!panel) return;
       panel.style.display = toggle.checked ? 'block' : 'none';
+      if (toggle.checked) {
+        syncSecondary(methodId);
+      }
+    }
+
+    document.querySelectorAll('select[name^="mode["]').forEach(function (select) {
+      select.addEventListener('change', function () {
+        var match = select.name.match(/^mode\[(\d+)\]$/);
+        if (!match) return;
+        syncSecondary(match[1]);
+      });
     }
 
     toggles.forEach(function (toggle) {

@@ -22,7 +22,8 @@ form action="/pieces" method="post"
 
   h2 Movement Methods
   - @movement_methods.each do |method|
-    fieldset
+    - preview_method_attrs = { 'data-preview-method' => method['id'], 'data-preview-name' => method['name'], 'data-preview-kind' => method['kind'], 'data-preview-vectors' => method['vectors_json'] }
+    fieldset *preview_method_attrs
       legend = method['name']
 
       p
@@ -65,6 +66,26 @@ form action="/pieces" method="post"
             input type="checkbox" name="first_move_only[#{method['id']}]" value="1"
             |  First move only
 
+        - if method['supports_ray_limit'].to_i == 1
+          div data-secondary-ray-config=method['id'] style="display: none;"
+            p
+              label
+                input type="checkbox" name="secondary_mode_enabled[#{method['id']}]" value="1"
+                |  Also add
+                |  
+                strong data-secondary-ray-mode-label=method['id'] capture
+                |  rule with same vectors
+            p
+              label for="secondary_ray_limit_#{method['id']}"
+                | Ray limit for
+                |  
+                span data-secondary-ray-mode-label=method['id'] capture
+                |  (blank = infinite)
+              br
+              input id="secondary_ray_limit_#{method['id']}" type="number" min="1" name="secondary_ray_limit[#{method['id']}]"
+
+  == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: 'Unsaved piece', preview_initial_size: 8 }
+
   p
     button type="submit" Create
     |  
@@ -74,11 +95,42 @@ javascript:
   document.addEventListener('DOMContentLoaded', function () {
     var toggles = document.querySelectorAll('[data-method-toggle]');
 
+    function syncSecondary(methodId) {
+      var panel = document.querySelector('[data-secondary-ray-config="' + methodId + '"]');
+      if (!panel) return;
+
+      var modeInput = document.querySelector('[name="mode[' + methodId + ']"]');
+      if (!modeInput) {
+        panel.style.display = 'none';
+        return;
+      }
+
+      var mode = modeInput.value;
+      var visible = (mode === 'move' || mode === 'capture');
+      panel.style.display = visible ? 'block' : 'none';
+
+      var otherMode = mode === 'move' ? 'capture' : 'move';
+      panel.querySelectorAll('[data-secondary-ray-mode-label]').forEach(function (el) {
+        el.textContent = otherMode;
+      });
+    }
+
     function sync(toggle) {
       var methodId = toggle.getAttribute('data-method-toggle');
       var panel = document.querySelector('[data-method-config="' + methodId + '"]');
       if (!panel) return;
       panel.style.display = toggle.checked ? 'block' : 'none';
+      if (toggle.checked) {
+        syncSecondary(methodId);
+      }
+    }
+
+    document.querySelectorAll('select[name^="mode["]').forEach(function (select) {
+      select.addEventListener('change', function () {
+        var match = select.name.match(/^mode\[(\d+)\]$/);
+        if (!match) return;
+        syncSecondary(match[1]);
+      });
     }
 
     toggles.forEach(function (toggle) {
