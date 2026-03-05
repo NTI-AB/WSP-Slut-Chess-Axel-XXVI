@@ -1,5 +1,6 @@
 h1 = @piece['name']
 
+/- Optional icon preview and icon base color metadata.
 - if @piece['image_path'] && !@piece['image_path'].empty?
   p
     img src=@piece['image_path'] alt="#{@piece['name']} icon" style="width: 5rem; height: 5rem; object-fit: fill; border: 1px solid #bbb;"
@@ -11,11 +12,13 @@ p
   strong ID:
   |  #{@piece['id']}
 
+/- Optional piece description.
 - if @piece['description'] && !@piece['description'].empty?
   p
     strong Description:
     |  #{@piece['description']}
 
+/- Edit/delete controls.
 p
   a href="/pieces/#{@piece['id']}/edit" Edit piece
 
@@ -25,6 +28,7 @@ p
 
 h2 Special Attributes
 
+/- Lists powers currently attached to the piece.
 - if @special_powers.empty?
   p No special attributes enabled.
 - else
@@ -37,6 +41,7 @@ h2 Special Attributes
 
 h2 Movement Rules
 
+/- Lists configured movement rows and effective options.
 - if @piece_moves.empty?
   p No movement rules linked.
 - else
@@ -56,7 +61,9 @@ h2 Movement Rules
         - if move['method_description'] && !move['method_description'].empty?
           |  - #{move['method_description']}
 
+/- Static move preview for persisted piece configuration.
 == slim :_piece_preview, locals: { preview_title: 'Move Preview Sandbox', preview_source: 'static', preview_piece_name: @piece['name'], preview_piece_icon: @piece['image_path'], preview_piece_icon_base_color: (@piece['icon_base_color'] || 'black'), preview_moves: @preview_piece_moves, preview_initial_size: 8 }
 
+/- Back navigation.
 p
   a href="/pieces" Back to pieces

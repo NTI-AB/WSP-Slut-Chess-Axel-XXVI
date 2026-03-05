@@ -1,13 +1,16 @@
 doctype html
 html
   head
+    /- Base page metadata used by all views.
     meta charset="utf-8"
     title Pieces
   body
+    /- Main navigation links for piece routes.
     nav
       a href="/pieces" Pieces
     nav
       a href="/pieces/new" Create piece
 
+    /- View outlet separator and page-specific content.
     hr
     == yield

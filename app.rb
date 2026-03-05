@@ -5,9 +5,13 @@ require 'sinatra/reloader'
 require 'bcrypt'
 require 'time'
 require 'json'
+require 'fileutils'
+require 'securerandom'
 
 DB_PATH = 'databas.db'
+ICON_UPLOAD_DIR = File.join('public', 'icons', 'pieces', 'uploads')
 
+# Ensures older DB files get the icon base color column before app logic runs.
 def ensure_pieces_icon_base_color_column!
   conn = SQLite3::Database.new(DB_PATH)
   columns = conn.execute('PRAGMA table_info(pieces)').map { |row| row[1] }
@@ -22,6 +26,7 @@ end
 ensure_pieces_icon_base_color_column!
 
 helpers do
+  # Returns a memoized DB connection configured to return row hashes.
   def db
     @db ||= begin
       conn = SQLite3::Database.new(DB_PATH)
@@ -30,6 +35,7 @@ helpers do
     end
   end
 
+  # Finds one active, top-level piece by id.
   def piece_by_id(id)
     db.get_first_row(
       'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND owner_id = 0 AND source_piece_id IS NULL',
@@ -37,12 +43,14 @@ helpers do
     )
   end
 
+  # Parses power_ids JSON safely into unique integer ids.
   def parse_power_ids_json(raw)
     JSON.parse(raw.to_s).map(&:to_i).uniq
   rescue JSON::ParserError
     []
   end
 
+  # Fetches power rows for a set of ids.
   def special_powers_by_ids(power_ids)
     return [] if power_ids.empty?
 
@@ -50,6 +58,7 @@ helpers do
     db.execute("SELECT id, name, description FROM powers WHERE id IN (#{placeholders}) ORDER BY id", power_ids)
   end
 
+  # Loads movement methods and indexes them by id.
   def movement_method_map(method_ids)
     return {} if method_ids.empty?
 
@@ -58,6 +67,7 @@ helpers do
     methods.each_with_object({}) { |method, memo| memo[method['id']] = method }
   end
 
+  # Filters selected power ids to ids that exist in DB.
   def valid_power_ids(selected_power_ids)
     return [] if selected_power_ids.empty?
 
@@ -65,6 +75,7 @@ helpers do
     db.execute("SELECT id FROM powers WHERE id IN (#{placeholders})", selected_power_ids).map { |row| row['id'].to_i }
   end
 
+  # Parses JSON and returns only hash values.
   def parse_json_hash(raw)
     value = JSON.parse(raw.to_s)
     value.is_a?(Hash) ? value : {}
@@ -72,6 +83,7 @@ helpers do
     {}
   end
 
+  # Shapes piece move rows into preview payload consumed by JS.
   def preview_piece_moves_payload(piece_moves)
     piece_moves.map do |move|
       {
@@ -88,20 +100,24 @@ helpers do
     end
   end
 
+  # JSON helper used inside Slim partials.
   def json_dump(value)
     JSON.generate(value)
   end
 
+  # Normalizes mode input to accepted enum values.
   def normalized_mode(value)
     mode = value.to_s
     %w[move capture both].include?(mode) ? mode : 'both'
   end
 
+  # Normalizes color scope input to accepted enum values.
   def normalized_color_scope(value)
     color_scope = value.to_s
     %w[any white black].include?(color_scope) ? color_scope : 'any'
   end
 
+  # Parses optional ray limit if method supports ray limits.
   def parsed_ray_limit_for_method(method, raw_limit)
     return nil unless method['supports_ray_limit'].to_i == 1
 
@@ -112,17 +128,46 @@ helpers do
     number.positive? ? number : nil
   end
 
-  def normalized_image_path(value)
-    path = value.to_s.strip
-    return nil if path.empty?
-    path
-  end
-
+  # Normalizes icon base color input.
   def normalized_icon_base_color(value)
     color = value.to_s
     %w[black white].include?(color) ? color : 'black'
   end
 
+  # Whitelists supported icon filename extensions.
+  def allowed_icon_extension(filename)
+    ext = File.extname(filename.to_s).downcase
+    %w[.png .jpg .jpeg .webp .gif .svg].include?(ext) ? ext : nil
+  end
+
+  # Stores uploaded icon file under public icons directory and returns public path.
+  def save_uploaded_icon(upload, prefix:)
+    return nil unless upload && upload[:tempfile] && upload[:filename]
+
+    ext = allowed_icon_extension(upload[:filename])
+    return nil unless ext
+
+    FileUtils.mkdir_p(ICON_UPLOAD_DIR)
+    safe_prefix = prefix.to_s.downcase.gsub(/[^a-z0-9]+/, '_').gsub(/\A_+|_+\z/, '')
+    safe_prefix = 'piece' if safe_prefix.empty?
+    file_name = "#{safe_prefix}_#{Time.now.utc.strftime('%Y%m%d%H%M%S')}_#{SecureRandom.hex(4)}#{ext}"
+    absolute_path = File.join(ICON_UPLOAD_DIR, file_name)
+
+    upload[:tempfile].rewind
+    File.open(absolute_path, 'wb') { |f| IO.copy_stream(upload[:tempfile], f) }
+    "/icons/pieces/uploads/#{file_name}"
+  end
+
+  # Deletes previously uploaded icons when they are replaced by a new upload.
+  def remove_uploaded_icon_if_present(path)
+    return if path.to_s.empty?
+    return unless path.start_with?('/icons/pieces/uploads/')
+
+    absolute_path = File.join('public', path.sub(%r{\A/}, ''))
+    File.delete(absolute_path) if File.file?(absolute_path)
+  end
+
+  # Inserts one piece_moves row from normalized config values.
   def insert_piece_move_row!(piece_id:, method:, ray_limit:, mode:, color_scope:, first_move_only:, now:)
     db.execute(
       'INSERT INTO piece_moves (piece_id, movement_method_id, name, kind, vectors_json, ray_limit, mode, color_scope, first_move_only, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -143,14 +188,17 @@ helpers do
   end
 end
 
+# Closes DB connection after each request.
 after do
   @db&.close
 end
 
+# Root redirects to pieces index.
 get '/' do
   redirect '/pieces'
 end
 
+# Lists active pieces.
 get '/pieces' do
   @pieces = db.execute(<<~SQL)
     SELECT id, name, description, image_path, icon_base_color, created_at
@@ -164,22 +212,29 @@ get '/pieces' do
   slim :index
 end
 
+# Renders new piece form.
 get '/pieces/new' do
   @movement_methods = db.execute('SELECT id, key, name, kind, vectors_json, supports_ray_limit, description FROM movement_methods ORDER BY id')
   @powers = db.execute('SELECT id, name, description FROM powers ORDER BY id')
   slim(:new)
 end
 
+# Creates a piece and its configured movement rows.
 post '/pieces' do
   name = params[:name].to_s.strip
   description = params[:description].to_s.strip
-  image_path = normalized_image_path(params[:image_path])
+  icon_upload = params[:icon_file]
+  image_path = nil
   icon_base_color = normalized_icon_base_color(params[:icon_base_color])
   method_ids = Array(params[:method_ids]).map(&:to_i).uniq
   selected_power_ids = Array(params[:power_ids]).map(&:to_i).uniq
 
   halt 422, 'Name is required' if name.empty?
   halt 422, 'Select at least one movement method' if method_ids.empty?
+  if icon_upload && !icon_upload[:filename].to_s.strip.empty?
+    image_path = save_uploaded_icon(icon_upload, prefix: name)
+    halt 422, 'Unsupported icon format. Use png, jpg, jpeg, webp, gif, or svg.' if image_path.nil?
+  end
 
   method_map = movement_method_map(method_ids)
 
@@ -252,6 +307,7 @@ rescue SQLite3::SQLException => e
   halt 500, "Could not create piece: #{e.message}"
 end
 
+# Renders edit form with current move config grouped per method.
 get '/pieces/:id/edit' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -294,6 +350,7 @@ get '/pieces/:id/edit' do
   slim :edit
 end
 
+# Updates piece fields and rewrites its movement rows.
 post '/pieces/:id/update' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -303,13 +360,20 @@ post '/pieces/:id/update' do
 
   name = params[:name].to_s.strip
   description = params[:description].to_s.strip
-  image_path = normalized_image_path(params[:image_path])
+  icon_upload = params[:icon_file]
+  image_path = piece['image_path']
   icon_base_color = normalized_icon_base_color(params[:icon_base_color])
   method_ids = Array(params[:method_ids]).map(&:to_i).uniq
   selected_power_ids = Array(params[:power_ids]).map(&:to_i).uniq
 
   halt 422, 'Name is required' if name.empty?
   halt 422, 'Select at least one movement method' if method_ids.empty?
+  if icon_upload && !icon_upload[:filename].to_s.strip.empty?
+    uploaded_path = save_uploaded_icon(icon_upload, prefix: name)
+    halt 422, 'Unsupported icon format. Use png, jpg, jpeg, webp, gif, or svg.' if uploaded_path.nil?
+    remove_uploaded_icon_if_present(piece['image_path'])
+    image_path = uploaded_path
+  end
 
   method_map = movement_method_map(method_ids)
   halt 422, 'Invalid movement method selection' if method_map.empty?
@@ -370,6 +434,7 @@ rescue SQLite3::SQLException => e
   halt 500, "Could not update piece: #{e.message}"
 end
 
+# Deletes one piece.
 post '/pieces/:id/delete' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -381,6 +446,7 @@ post '/pieces/:id/delete' do
   redirect '/pieces'
 end
 
+# Shows one piece with powers, moves, and preview payload.
 get '/pieces/:id' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i

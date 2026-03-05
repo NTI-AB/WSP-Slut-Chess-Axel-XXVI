@@ -6,6 +6,7 @@
   var closestForm = util.closestForm;
   var forEachNode = util.forEachNode;
 
+  // Reads one enabled movement method config from the form.
   function readCheckedToggleConfig(form, methodId) {
     var fieldset = form.querySelector('[data-preview-method="' + methodId + '"]');
     if (!fieldset) return null;
@@ -27,6 +28,7 @@
     };
   }
 
+  // Builds an optional mirrored secondary mode config for ray-like methods.
   function readSecondaryConfig(form, methodId, baseMove) {
     var secondaryToggle = form.querySelector('[name="secondary_mode_enabled[' + methodId + ']"]');
     var secondaryRayLimitInput = form.querySelector('[name="secondary_ray_limit[' + methodId + ']"]');
@@ -49,6 +51,7 @@
     };
   }
 
+  // Reads live movement config from the create/edit form.
   function parseMoveSourceFromForm(root) {
     var form = closestForm(root);
     if (!form) return [];
@@ -71,6 +74,7 @@
     return moves;
   }
 
+  // Reads fixed movement config embedded as JSON in the preview partial.
   function parseMoveSourceStatic(root) {
     var script = root.querySelector('script[data-preview-static-moves]');
     if (!script) return [];
@@ -78,6 +82,7 @@
     return Array.isArray(value) ? value : [];
   }
 
+  // Selects the correct source (form or static JSON) for move definitions.
   function readMoveSource(root) {
     var source = root.getAttribute('data-preview-source') || 'static';
     return source === 'form' ? parseMoveSourceFromForm(root) : parseMoveSourceStatic(root);

@@ -7,6 +7,7 @@
   var keyToPoint = util.keyToPoint;
   var toBoardCoord = util.toBoardCoord;
 
+  // Decides if icon colors should be inverted for selected side color.
   function shouldInvertIcon(state) {
     if (!state.pieceIconPath) return false;
 
@@ -16,6 +17,7 @@
     return false;
   }
 
+  // Renders preview piece content (icon if present, fallback letter otherwise).
   function renderPieceContent(square, state) {
     if (state.pieceIconPath) {
       var img = document.createElement('img');
@@ -33,6 +35,7 @@
     square.textContent = 'P';
   }
 
+  // Places the preview piece at board center.
   function resetPieceToCenter(state) {
     state.piecePos = {
       x: Math.floor(state.size / 2),
@@ -40,6 +43,7 @@
     };
   }
 
+  // Removes out-of-bounds entities and resolves piece/blocker overlap.
   function sanitizeBoardState(state) {
     var nextBlockers = {};
     Object.keys(state.blockers).forEach(function (key) {
@@ -59,6 +63,7 @@
     }
   }
 
+  // Applies CSS marker classes for move/capture/both states.
   function applyMarkerClass(square, marker) {
     if (marker.move && marker.capture) {
       square.classList.add('is-both');
@@ -73,6 +78,7 @@
     }
   }
 
+  // Rebuilds full board UI and textual move summaries.
   function renderBoard(root, elements, state) {
     sanitizeBoardState(state);
     elements.boardEl.innerHTML = '';

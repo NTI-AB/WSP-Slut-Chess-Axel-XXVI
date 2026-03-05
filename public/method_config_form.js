@@ -1,4 +1,5 @@
 (function () {
+  // Shows/hides the secondary ray config and updates its opposite mode label.
   function syncSecondary(methodId) {
     var panel = document.querySelector('[data-secondary-ray-config="' + methodId + '"]');
     if (!panel) return;
@@ -19,6 +20,7 @@
     });
   }
 
+  // Shows/hides one method config block based on checkbox state.
   function sync(toggle) {
     var methodId = toggle.getAttribute('data-method-toggle');
     var panel = document.querySelector('[data-method-config="' + methodId + '"]');
@@ -28,6 +30,7 @@
     if (toggle.checked) syncSecondary(methodId);
   }
 
+  // Wires all method toggles and mode selects after DOM is ready.
   document.addEventListener('DOMContentLoaded', function () {
     var toggles = document.querySelectorAll('[data-method-toggle]');
     if (toggles.length === 0) return;

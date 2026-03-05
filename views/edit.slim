@@ -1,6 +1,8 @@
 h1 Edit Piece
 
-form action="/pieces/#{@piece['id']}/update" method="post"
+/- Piece edit form mirroring create flow with prefilled values.
+form action="/pieces/#{@piece['id']}/update" method="post" enctype="multipart/form-data"
+  /- Core piece identity fields.
   p
     label for="name" Name
     br
@@ -12,9 +14,12 @@ form action="/pieces/#{@piece['id']}/update" method="post"
     textarea#description name="description" rows="4" cols="50" = @piece['description']
 
   p
-    label for="image_path" Icon path
+    label for="icon_file" Replace icon
     br
-    input#image_path type="text" name="image_path" value=@piece['image_path'] placeholder="/img/my_piece.png"
+    input#icon_file type="file" name="icon_file" accept=".png,.jpg,.jpeg,.webp,.gif,.svg,image/*"
+    - if @piece['image_path'] && !@piece['image_path'].empty?
+      br
+      small Current icon is kept if no new file is selected.
 
   p
     label for="icon_base_color" Icon base color
@@ -23,6 +28,7 @@ form action="/pieces/#{@piece['id']}/update" method="post"
       option value="black" selected=(@piece['icon_base_color'].to_s != 'white') black
       option value="white" selected=(@piece['icon_base_color'].to_s == 'white') white
 
+  /- Power selection with current power_ids prechecked.
   h2 Special Attributes
   - @powers.each do |power|
     p
@@ -32,6 +38,7 @@ form action="/pieces/#{@piece['id']}/update" method="post"
         - if power['description'] && !power['description'].empty?
           |  - #{power['description']}
 
+  /- Movement method controls with loaded primary/secondary configs.
   h2 Movement Methods
   - @movement_methods.each do |method|
     - config = @move_config_by_method_id[method['id'].to_i]
@@ -100,8 +107,10 @@ form action="/pieces/#{@piece['id']}/update" method="post"
               br
               input id="secondary_ray_limit_#{method['id']}" type="number" min="1" name="secondary_ray_limit[#{method['id']}]" value=(secondary_config && secondary_config['ray_limit'])
 
+  /- Reusable live board preview bound to the edit form values.
   == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: @piece['name'], preview_piece_icon: @piece['image_path'], preview_piece_icon_base_color: @piece['icon_base_color'], preview_initial_size: 8 }
 
+  /- Submit/cancel actions.
   p
     button type="submit" Save changes
     |  

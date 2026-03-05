@@ -6,6 +6,7 @@
   var coordKey = util.coordKey;
   var positiveInt = util.positiveInt;
 
+  // Adds a move/capture mark for one destination square.
   function addDestination(destinations, x, y, kind) {
     var key = coordKey(x, y);
     if (!destinations[key]) {
@@ -14,14 +15,17 @@
     destinations[key][kind] = true;
   }
 
+  // Checks if current mode allows normal movement targets.
   function includeMoveMode(mode) {
     return mode === 'both' || mode === 'move';
   }
 
+  // Checks if current mode allows capture targets.
   function includeCaptureMode(mode) {
     return mode === 'both' || mode === 'capture';
   }
 
+  // Evaluates ray-based movement (sliding pieces).
   function applyRayMove(move, origin, state, destinations) {
     var vectors = move.vectors || {};
     var rays = Array.isArray(vectors.rays) ? vectors.rays : [];
@@ -58,6 +62,7 @@
     }
   }
 
+  // Evaluates leap-based movement (jumping pieces).
   function applyLeapMove(move, origin, state, destinations) {
     var vectors = move.vectors || {};
     var leaps = Array.isArray(vectors.leaps) ? vectors.leaps : [];
@@ -83,6 +88,7 @@
     }
   }
 
+  // Evaluates directional pawn-style rules with optional first-move rays.
   function applyPawnRuleMove(move, origin, state, destinations) {
     var vectors = move.vectors || {};
     var colorRule = vectors[state.pieceColor];
@@ -139,6 +145,7 @@
     }
   }
 
+  // Aggregates all destinations for the current preview state.
   function computeDestinations(root, state) {
     var destinations = {};
     if (!state.piecePos) return destinations;

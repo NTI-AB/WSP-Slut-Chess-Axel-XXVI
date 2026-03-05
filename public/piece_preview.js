@@ -1,4 +1,5 @@
 (function () {
+  // Boots the preview module for every preview root on the page.
   document.addEventListener('DOMContentLoaded', function () {
     var ns = window.PiecePreview || {};
     if (typeof ns.createPreview !== 'function') return;

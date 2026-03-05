@@ -1,3 +1,4 @@
+/- Normalize preview locals and build reusable attribute hashes.
 - _preview_title = (defined?(preview_title) && preview_title) ? preview_title : 'Board Preview'
 - _preview_source = (defined?(preview_source) && preview_source) ? preview_source : 'static'
 - _preview_piece_name = (defined?(preview_piece_name) && preview_piece_name) ? preview_piece_name : 'Piece'
@@ -25,6 +26,9 @@
 
 
 link rel="stylesheet" href="/piece_preview.css"
+/-
+  Load preview modules in dependency order:
+  common -> move source -> move engine -> renderer -> app -> bootstrap.
 script src="/preview/common.js" defer=true
 script src="/preview/move_source.js" defer=true
 script src="/preview/move_engine.js" defer=true
@@ -33,11 +37,13 @@ script src="/preview/preview_app.js" defer=true
 script src="/piece_preview.js" defer=true
 
 section *_root_attrs
+  /- Preview heading and usage hint.
   h2 = _preview_title
 
   p
     | Click the board to place the preview piece and blockers. Use ally/enemy blockers to test capture and blocked paths.
 
+  /- Interactive controls (size, color, first-move, tools, reset actions).
   div class="piece-preview__controls"
     p
       label for="preview_board_size_#{object_id}" Board size
@@ -70,11 +76,13 @@ section *_root_attrs
       |  
       button *_clear_blockers_button_attrs Clear blockers
 
+  /- Dynamic status text, move summary, and rendered board.
   p *_status_attrs Loading preview...
   p *_moves_attrs
 
   div *_board_attrs
 
+  /- Legend for board symbols and move marker colors.
   p class="piece-preview__legend"
     span
       | P = preview piece
@@ -89,6 +97,7 @@ section *_root_attrs
     span
       | Purple = both
 
+  /- Embedded static move payload used on non-form pages.
   - if _preview_source == 'static'
     script *_static_moves_script_attrs
       == json_dump(_preview_moves)

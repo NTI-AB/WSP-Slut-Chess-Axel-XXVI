@@ -1,6 +1,8 @@
 h1 Create Piece
 
-form action="/pieces" method="post"
+/- Piece creation form with icon, powers, movement config, and live preview.
+form action="/pieces" method="post" enctype="multipart/form-data"
+  /- Core piece identity fields.
   p
     label for="name" Name
     br
@@ -12,9 +14,9 @@ form action="/pieces" method="post"
     textarea#description name="description" rows="4" cols="50"
 
   p
-    label for="image_path" Icon path
+    label for="icon_file" Upload icon
     br
-    input#image_path type="text" name="image_path" placeholder="/img/my_piece.png"
+    input#icon_file type="file" name="icon_file" accept=".png,.jpg,.jpeg,.webp,.gif,.svg,image/*"
 
   p
     label for="icon_base_color" Icon base color
@@ -23,6 +25,7 @@ form action="/pieces" method="post"
       option value="black" selected=true black
       option value="white" white
 
+  /- Power selection (special attributes attached as power_ids).
   h2 Special Attributes
   - @powers.each do |power|
     p
@@ -32,6 +35,7 @@ form action="/pieces" method="post"
         - if power['description'] && !power['description'].empty?
           |  - #{power['description']}
 
+  /- Movement method selection and per-method behavior controls.
   h2 Movement Methods
   - @movement_methods.each do |method|
     - preview_method_attrs = { 'data-preview-method' => method['id'], 'data-preview-name' => method['name'], 'data-preview-kind' => method['kind'], 'data-preview-vectors' => method['vectors_json'] }
@@ -96,8 +100,10 @@ form action="/pieces" method="post"
               br
               input id="secondary_ray_limit_#{method['id']}" type="number" min="1" name="secondary_ray_limit[#{method['id']}]"
 
+  /- Reusable live board preview bound to the form values.
   == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: 'Unsaved piece', preview_piece_icon: nil, preview_piece_icon_base_color: 'black', preview_initial_size: 8 }
 
+  /- Submit/cancel actions.
   p
     button type="submit" Create
     |  
