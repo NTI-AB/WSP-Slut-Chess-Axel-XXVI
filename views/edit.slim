@@ -11,6 +11,18 @@ form action="/pieces/#{@piece['id']}/update" method="post"
     br
     textarea#description name="description" rows="4" cols="50" = @piece['description']
 
+  p
+    label for="image_path" Icon path
+    br
+    input#image_path type="text" name="image_path" value=@piece['image_path'] placeholder="/img/my_piece.png"
+
+  p
+    label for="icon_base_color" Icon base color
+    br
+    select#icon_base_color name="icon_base_color"
+      option value="black" selected=(@piece['icon_base_color'].to_s != 'white') black
+      option value="white" selected=(@piece['icon_base_color'].to_s == 'white') white
+
   h2 Special Attributes
   - @powers.each do |power|
     p
@@ -88,7 +100,7 @@ form action="/pieces/#{@piece['id']}/update" method="post"
               br
               input id="secondary_ray_limit_#{method['id']}" type="number" min="1" name="secondary_ray_limit[#{method['id']}]" value=(secondary_config && secondary_config['ray_limit'])
 
-  == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: @piece['name'], preview_initial_size: 8 }
+  == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: @piece['name'], preview_piece_icon: @piece['image_path'], preview_piece_icon_base_color: @piece['icon_base_color'], preview_initial_size: 8 }
 
   p
     button type="submit" Save changes

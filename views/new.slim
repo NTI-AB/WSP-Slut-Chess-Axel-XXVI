@@ -11,6 +11,18 @@ form action="/pieces" method="post"
     br
     textarea#description name="description" rows="4" cols="50"
 
+  p
+    label for="image_path" Icon path
+    br
+    input#image_path type="text" name="image_path" placeholder="/img/my_piece.png"
+
+  p
+    label for="icon_base_color" Icon base color
+    br
+    select#icon_base_color name="icon_base_color"
+      option value="black" selected=true black
+      option value="white" white
+
   h2 Special Attributes
   - @powers.each do |power|
     p
@@ -84,7 +96,7 @@ form action="/pieces" method="post"
               br
               input id="secondary_ray_limit_#{method['id']}" type="number" min="1" name="secondary_ray_limit[#{method['id']}]"
 
-  == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: 'Unsaved piece', preview_initial_size: 8 }
+  == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: 'Unsaved piece', preview_piece_icon: nil, preview_piece_icon_base_color: 'black', preview_initial_size: 8 }
 
   p
     button type="submit" Create

@@ -8,6 +8,19 @@ require 'json'
 
 DB_PATH = 'databas.db'
 
+def ensure_pieces_icon_base_color_column!
+  conn = SQLite3::Database.new(DB_PATH)
+  columns = conn.execute('PRAGMA table_info(pieces)').map { |row| row[1] }
+  return if columns.include?('icon_base_color')
+
+  conn.execute("ALTER TABLE pieces ADD COLUMN icon_base_color TEXT NOT NULL DEFAULT 'black'")
+  conn.execute("UPDATE pieces SET icon_base_color = 'black' WHERE icon_base_color IS NULL OR icon_base_color = ''")
+ensure
+  conn&.close
+end
+
+ensure_pieces_icon_base_color_column!
+
 helpers do
   def db
     @db ||= begin
@@ -99,6 +112,17 @@ helpers do
     number.positive? ? number : nil
   end
 
+  def normalized_image_path(value)
+    path = value.to_s.strip
+    return nil if path.empty?
+    path
+  end
+
+  def normalized_icon_base_color(value)
+    color = value.to_s
+    %w[black white].include?(color) ? color : 'black'
+  end
+
   def insert_piece_move_row!(piece_id:, method:, ray_limit:, mode:, color_scope:, first_move_only:, now:)
     db.execute(
       'INSERT INTO piece_moves (piece_id, movement_method_id, name, kind, vectors_json, ray_limit, mode, color_scope, first_move_only, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
@@ -129,7 +153,7 @@ end
 
 get '/pieces' do
   @pieces = db.execute(<<~SQL)
-    SELECT id, name, description, created_at
+    SELECT id, name, description, image_path, icon_base_color, created_at
     FROM pieces
     WHERE deleted_at IS NULL
       AND owner_id = 0
@@ -149,6 +173,8 @@ end
 post '/pieces' do
   name = params[:name].to_s.strip
   description = params[:description].to_s.strip
+  image_path = normalized_image_path(params[:image_path])
+  icon_base_color = normalized_icon_base_color(params[:icon_base_color])
   method_ids = Array(params[:method_ids]).map(&:to_i).uniq
   selected_power_ids = Array(params[:power_ids]).map(&:to_i).uniq
 
@@ -166,12 +192,14 @@ post '/pieces' do
 
   db.transaction
   db.execute(
-    'INSERT INTO pieces (owner_id, source_piece_id, name, description, power_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO pieces (owner_id, source_piece_id, name, description, image_path, icon_base_color, power_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [
       0,
       nil,
       name,
       (description.empty? ? nil : description),
+      image_path,
+      icon_base_color,
       JSON.generate(filtered_power_ids),
       now,
       now
@@ -275,6 +303,8 @@ post '/pieces/:id/update' do
 
   name = params[:name].to_s.strip
   description = params[:description].to_s.strip
+  image_path = normalized_image_path(params[:image_path])
+  icon_base_color = normalized_icon_base_color(params[:icon_base_color])
   method_ids = Array(params[:method_ids]).map(&:to_i).uniq
   selected_power_ids = Array(params[:power_ids]).map(&:to_i).uniq
 
@@ -289,8 +319,8 @@ post '/pieces/:id/update' do
 
   db.transaction
   db.execute(
-    'UPDATE pieces SET name = ?, description = ?, power_ids = ?, updated_at = ? WHERE id = ?',
-    [name, (description.empty? ? nil : description), JSON.generate(filtered_power_ids), now, id]
+    'UPDATE pieces SET name = ?, description = ?, image_path = ?, icon_base_color = ?, power_ids = ?, updated_at = ? WHERE id = ?',
+    [name, (description.empty? ? nil : description), image_path, icon_base_color, JSON.generate(filtered_power_ids), now, id]
   )
 
   db.execute('DELETE FROM piece_moves WHERE piece_id = ?', [id])

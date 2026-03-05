@@ -7,6 +7,32 @@
   var keyToPoint = util.keyToPoint;
   var toBoardCoord = util.toBoardCoord;
 
+  function shouldInvertIcon(state) {
+    if (!state.pieceIconPath) return false;
+
+    var base = state.iconBaseColor === 'white' ? 'white' : 'black';
+    if (base === 'black' && state.pieceColor === 'white') return true;
+    if (base === 'white' && state.pieceColor === 'black') return true;
+    return false;
+  }
+
+  function renderPieceContent(square, state) {
+    if (state.pieceIconPath) {
+      var img = document.createElement('img');
+      img.className = 'piece-preview__piece-icon';
+      if (shouldInvertIcon(state)) img.classList.add('is-inverted');
+      img.alt = 'preview piece icon';
+      img.src = state.pieceIconPath;
+      img.onerror = function () {
+        square.textContent = 'P';
+      };
+      square.appendChild(img);
+      return;
+    }
+
+    square.textContent = 'P';
+  }
+
   function resetPieceToCenter(state) {
     state.piecePos = {
       x: Math.floor(state.size / 2),
@@ -71,7 +97,7 @@
         var isPiece = state.piecePos && state.piecePos.x === x && state.piecePos.y === y;
         if (isPiece) {
           square.classList.add('is-piece');
-          square.textContent = 'P';
+          renderPieceContent(square, state);
         } else if (blocker === 'ally') {
           square.classList.add('is-ally');
           square.textContent = 'A';

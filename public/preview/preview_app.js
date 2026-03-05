@@ -25,6 +25,8 @@
       state: {
         size: 8,
         pieceColor: 'white',
+        pieceIconPath: '',
+        iconBaseColor: 'black',
         firstMove: false,
         tool: 'piece',
         piecePos: null,
@@ -43,13 +45,44 @@
 
   function initStateFromInputs(preview) {
     var elements = preview.elements;
+    var root = preview.root;
     var state = preview.state;
     state.size = positiveInt(elements.boardSizeInput && elements.boardSizeInput.value) || 8;
     state.pieceColor = (elements.pieceColorInput && elements.pieceColorInput.value) || 'white';
+    state.pieceIconPath = (root.getAttribute('data-preview-piece-icon') || '').trim();
+    state.iconBaseColor = (root.getAttribute('data-preview-piece-icon-base-color') || 'black').trim() === 'white' ? 'white' : 'black';
     state.firstMove = !!(elements.firstMoveInput && elements.firstMoveInput.checked);
   }
 
+  function readPieceIconFromForm(preview) {
+    if ((preview.root.getAttribute('data-preview-source') || 'static') !== 'form') {
+      return preview.state.pieceIconPath || '';
+    }
+
+    var form = closestForm(preview.root);
+    if (!form) return preview.state.pieceIconPath || '';
+    var input = form.querySelector('[name="image_path"]');
+    if (!input) return preview.state.pieceIconPath || '';
+
+    return String(input.value || '').trim();
+  }
+
+  function readIconBaseColorFromForm(preview) {
+    if ((preview.root.getAttribute('data-preview-source') || 'static') !== 'form') {
+      return preview.state.iconBaseColor || 'black';
+    }
+
+    var form = closestForm(preview.root);
+    if (!form) return preview.state.iconBaseColor || 'black';
+    var input = form.querySelector('[name="icon_base_color"]');
+    if (!input) return preview.state.iconBaseColor || 'black';
+
+    return String(input.value || '') === 'white' ? 'white' : 'black';
+  }
+
   function render(preview) {
+    preview.state.pieceIconPath = readPieceIconFromForm(preview);
+    preview.state.iconBaseColor = readIconBaseColorFromForm(preview);
     renderer.renderBoard(preview.root, preview.elements, preview.state);
   }
 

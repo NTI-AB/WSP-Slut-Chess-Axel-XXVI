@@ -83,12 +83,21 @@ MOVEMENT_METHODS = [
 ].freeze
 
 PIECE_SEEDS = [
-  { id: 1, name: 'King', description: 'Moves one square in any direction.', power_ids: [] },
-  { id: 2, name: 'Queen', description: 'Moves any number of squares in any direction.', power_ids: [] },
-  { id: 3, name: 'Rook', description: 'Moves any number of squares orthogonally.', power_ids: [] },
-  { id: 4, name: 'Bishop', description: 'Moves any number of squares diagonally.', power_ids: [] },
-  { id: 5, name: 'Knight', description: 'Moves in an L-shape, jumping over pieces.', power_ids: [] },
-  { id: 6, name: 'Pawn', description: 'Moves forward, captures diagonally; direction depends on color.', power_ids: [] }
+  { id: 1, name: 'King', description: 'Moves one square in any direction.', image_path: '/icons/pieces/king_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 2, name: 'Queen', description: 'Moves any number of squares in any direction.', image_path: '/icons/pieces/queen_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 3, name: 'Rook', description: 'Moves any number of squares orthogonally.', image_path: '/icons/pieces/rook_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 4, name: 'Bishop', description: 'Moves any number of squares diagonally.', image_path: '/icons/pieces/bishop_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 5, name: 'Knight', description: 'Moves in an L-shape, jumping over pieces.', image_path: '/icons/pieces/knight_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 6, name: 'Pawn', description: 'Moves forward, captures diagonally; direction depends on color.', image_path: '/icons/pieces/pawn_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 7, name: 'Joker', description: 'King-like movement with taunt behavior handled in game logic.', image_path: '/icons/pieces/joker_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 8, name: 'Doomfist', description: 'Special capture behavior with stun handled in power logic.', image_path: '/icons/pieces/doomfist_black.png', icon_base_color: 'black', power_ids: [1] },
+  { id: 9, name: 'Sniper', description: 'King-like movement, stationary ranged capture via power.', image_path: '/icons/pieces/sniper_black.png', icon_base_color: 'black', power_ids: [2] },
+  { id: 10, name: 'Paladin', description: 'Orthogonal one-step movement with protection behavior in game logic.', image_path: '/icons/pieces/paladin_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 11, name: 'Assassin', description: 'Queen-like movement with jump-capture behavior via power.', image_path: '/icons/pieces/assassin_black.png', icon_base_color: 'black', power_ids: [4] },
+  { id: 12, name: 'Berserker', description: 'Knight movement with chain-capture behavior via power.', image_path: '/icons/pieces/berserker_black.png', icon_base_color: 'black', power_ids: [7] },
+  { id: 13, name: 'Catapult', description: 'King-like movement with launch behavior via power.', image_path: '/icons/pieces/catapult_black.png', icon_base_color: 'black', power_ids: [5] },
+  { id: 14, name: 'Wraith', description: 'Bishop movement with possession behavior via power.', image_path: '/icons/pieces/wraith_black.png', icon_base_color: 'black', power_ids: [6] },
+  { id: 15, name: 'Juggernaut', description: 'Queen-direction movement with furthest-only behavior via power.', image_path: '/icons/pieces/juggernaut_black.png', icon_base_color: 'black', power_ids: [3] }
 ].freeze
 
 POWERS = [
@@ -110,7 +119,22 @@ PIECE_MOVE_SEEDS = {
   3 => [{ movement_method_id: 1, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
   4 => [{ movement_method_id: 2, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
   5 => [{ movement_method_id: 4, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
-  6 => [{ movement_method_id: 5, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }]
+  6 => [{ movement_method_id: 5, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  7 => [{ movement_method_id: 3, ray_limit: 1, mode: 'move', color_scope: 'any', first_move_only: 0 }],
+  8 => [{ movement_method_id: 4, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  9 => [{ movement_method_id: 3, ray_limit: 1, mode: 'move', color_scope: 'any', first_move_only: 0 }],
+  10 => [{ movement_method_id: 1, ray_limit: 1, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  11 => [
+    { movement_method_id: 1, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 },
+    { movement_method_id: 2, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }
+  ],
+  12 => [{ movement_method_id: 4, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  13 => [{ movement_method_id: 3, ray_limit: 1, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  14 => [{ movement_method_id: 2, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  15 => [
+    { movement_method_id: 1, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 },
+    { movement_method_id: 2, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }
+  ]
 }.freeze
 
 db = SQLite3::Database.new(DB_PATH)
@@ -152,6 +176,7 @@ def create_tables(db)
       name TEXT NOT NULL,
       description TEXT,
       image_path TEXT,
+      icon_base_color TEXT NOT NULL DEFAULT 'black' CHECK (icon_base_color IN ('black', 'white')),
       is_public INTEGER NOT NULL DEFAULT 0 CHECK (is_public IN (0, 1)),
       power_ids TEXT NOT NULL DEFAULT '[]',
       preview_board_json TEXT NOT NULL DEFAULT '{"size":8,"placed":[]}',
@@ -227,9 +252,9 @@ def populate_pieces(db)
     db.execute(
       <<~SQL,
         INSERT INTO pieces (
-          id, owner_id, source_piece_id, name, description, image_path, is_public,
+          id, owner_id, source_piece_id, name, description, image_path, icon_base_color, is_public,
           power_ids, preview_board_json, deleted_at, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       SQL
       [
         piece[:id],
@@ -237,7 +262,8 @@ def populate_pieces(db)
         nil,
         piece[:name],
         piece[:description],
-        nil,
+        piece[:image_path],
+        piece[:icon_base_color] || 'black',
         1,
         piece[:power_ids].empty? ? DEFAULT_POWER_IDS_JSON : JSON.generate(piece[:power_ids]),
         DEFAULT_PREVIEW_BOARD_JSON,

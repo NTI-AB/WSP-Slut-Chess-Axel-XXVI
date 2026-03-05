@@ -1,5 +1,12 @@
 h1 = @piece['name']
 
+- if @piece['image_path'] && !@piece['image_path'].empty?
+  p
+    img src=@piece['image_path'] alt="#{@piece['name']} icon" style="width: 5rem; height: 5rem; object-fit: fill; border: 1px solid #bbb;"
+  p
+    strong Icon base color:
+    |  #{@piece['icon_base_color'] || 'black'}
+
 p
   strong ID:
   |  #{@piece['id']}
@@ -49,7 +56,7 @@ h2 Movement Rules
         - if move['method_description'] && !move['method_description'].empty?
           |  - #{move['method_description']}
 
-== slim :_piece_preview, locals: { preview_title: 'Move Preview Sandbox', preview_source: 'static', preview_piece_name: @piece['name'], preview_moves: @preview_piece_moves, preview_initial_size: 8 }
+== slim :_piece_preview, locals: { preview_title: 'Move Preview Sandbox', preview_source: 'static', preview_piece_name: @piece['name'], preview_piece_icon: @piece['image_path'], preview_piece_icon_base_color: (@piece['icon_base_color'] || 'black'), preview_moves: @preview_piece_moves, preview_initial_size: 8 }
 
 p
   a href="/pieces" Back to pieces
