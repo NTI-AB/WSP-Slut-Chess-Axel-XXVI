@@ -108,7 +108,7 @@ form action="/pieces/#{@piece['id']}/update" method="post" enctype="multipart/fo
               input id="secondary_ray_limit_#{method['id']}" type="number" min="1" name="secondary_ray_limit[#{method['id']}]" value=(secondary_config && secondary_config['ray_limit'])
 
   /- Reusable live board preview bound to the edit form values.
-  == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: @piece['name'], preview_piece_icon: @piece['image_path'], preview_piece_icon_base_color: @piece['icon_base_color'], preview_initial_size: 8 }
+  == slim :_piece_preview, locals: { preview_title: 'Live Move Preview', preview_source: 'form', preview_piece_name: @piece['name'], preview_piece_icon: @piece['image_path'], preview_piece_icon_base_color: @piece['icon_base_color'], preview_power_ids: @selected_power_ids, preview_initial_size: 8 }
 
   /- Submit/cancel actions.
   p

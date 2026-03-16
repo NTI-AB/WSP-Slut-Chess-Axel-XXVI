@@ -4,7 +4,9 @@
   var moveSource = ns.moveSource || {};
   var insideBoard = util.insideBoard;
   var coordKey = util.coordKey;
+  var keyToPoint = util.keyToPoint;
   var positiveInt = util.positiveInt;
+  var JUGGERNAUT_CHARGE_POWER_ID = 3;
 
   // Adds a move/capture mark for one destination square.
   function addDestination(destinations, x, y, kind) {
@@ -145,12 +147,83 @@
     }
   }
 
+  // Checks if a normalized power id list contains one specific id.
+  function hasPower(powerIds, id) {
+    for (var i = 0; i < powerIds.length; i += 1) {
+      if (powerIds[i] === id) return true;
+    }
+    return false;
+  }
+
+  // Computes greatest common divisor used to normalize direction vectors.
+  function gcd(a, b) {
+    var left = Math.abs(a);
+    var right = Math.abs(b);
+    while (right !== 0) {
+      var rest = left % right;
+      left = right;
+      right = rest;
+    }
+    return left || 1;
+  }
+
+  // Builds a normalized direction key from origin to destination.
+  function directionKey(origin, point) {
+    var dx = point.x - origin.x;
+    var dy = point.y - origin.y;
+    if (dx === 0 && dy === 0) return null;
+    var divider = gcd(dx, dy);
+    return (dx / divider) + ',' + (dy / divider);
+  }
+
+  // Calculates squared distance to compare which square is furthest.
+  function distanceScore(origin, point) {
+    var dx = point.x - origin.x;
+    var dy = point.y - origin.y;
+    return (dx * dx) + (dy * dy);
+  }
+
+  // Keeps only furthest reachable square per direction for Juggernaut.
+  function applyJuggernautCharge(destinations, origin) {
+    var keys = Object.keys(destinations);
+    if (keys.length === 0) return destinations;
+
+    var bestByDirection = {};
+
+    for (var i = 0; i < keys.length; i += 1) {
+      var key = keys[i];
+      var point = keyToPoint(key);
+      if (!isFinite(point.x) || !isFinite(point.y)) continue;
+
+      var dirKey = directionKey(origin, point);
+      if (!dirKey) continue;
+
+      var score = distanceScore(origin, point);
+      var currentBest = bestByDirection[dirKey];
+      if (!currentBest || score > currentBest.score) {
+        bestByDirection[dirKey] = { key: key, score: score };
+      }
+    }
+
+    var filtered = {};
+    var directionKeys = Object.keys(bestByDirection);
+    for (var j = 0; j < directionKeys.length; j += 1) {
+      var direction = directionKeys[j];
+      var best = bestByDirection[direction];
+      if (!best) continue;
+      filtered[best.key] = destinations[best.key];
+    }
+
+    return filtered;
+  }
+
   // Aggregates all destinations for the current preview state.
   function computeDestinations(root, state) {
     var destinations = {};
     if (!state.piecePos) return destinations;
 
     var moves = moveSource.readMoveSource(root);
+    var powerIds = moveSource.readPowerIds ? moveSource.readPowerIds(root) : [];
     var origin = state.piecePos;
 
     for (var i = 0; i < moves.length; i += 1) {
@@ -173,6 +246,10 @@
       if (move.kind === 'rule') {
         applyPawnRuleMove(move, origin, state, destinations);
       }
+    }
+
+    if (hasPower(powerIds, JUGGERNAUT_CHARGE_POWER_ID)) {
+      destinations = applyJuggernautCharge(destinations, origin);
     }
 
     return destinations;

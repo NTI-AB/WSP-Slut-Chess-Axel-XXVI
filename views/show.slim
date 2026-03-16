@@ -62,7 +62,7 @@ h2 Movement Rules
           |  - #{move['method_description']}
 
 /- Static move preview for persisted piece configuration.
-== slim :_piece_preview, locals: { preview_title: 'Move Preview Sandbox', preview_source: 'static', preview_piece_name: @piece['name'], preview_piece_icon: @piece['image_path'], preview_piece_icon_base_color: (@piece['icon_base_color'] || 'black'), preview_moves: @preview_piece_moves, preview_initial_size: 8 }
+== slim :_piece_preview, locals: { preview_title: 'Move Preview Sandbox', preview_source: 'static', preview_piece_name: @piece['name'], preview_piece_icon: @piece['image_path'], preview_piece_icon_base_color: (@piece['icon_base_color'] || 'black'), preview_power_ids: @preview_power_ids, preview_moves: @preview_piece_moves, preview_initial_size: 8 }
 
 /- Back navigation.
 p

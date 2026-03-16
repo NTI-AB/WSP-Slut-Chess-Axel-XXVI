@@ -88,7 +88,56 @@
     return source === 'form' ? parseMoveSourceFromForm(root) : parseMoveSourceStatic(root);
   }
 
+  // Normalizes a mixed list into unique positive integer ids.
+  function normalizePowerIds(rawList) {
+    if (!Array.isArray(rawList)) return [];
+    var ids = [];
+
+    for (var i = 0; i < rawList.length; i += 1) {
+      var id = positiveInt(rawList[i]);
+      if (!id) continue;
+      if (ids.indexOf(id) === -1) ids.push(id);
+    }
+
+    return ids;
+  }
+
+  // Reads selected powers from create/edit form checkboxes.
+  function readPowerIdsFromForm(root) {
+    var form = closestForm(root);
+    if (!form) return [];
+
+    var checked = form.querySelectorAll('input[name="power_ids[]"]:checked');
+    var ids = [];
+
+    for (var i = 0; i < checked.length; i += 1) {
+      var id = positiveInt(checked[i].value);
+      if (!id) continue;
+      if (ids.indexOf(id) === -1) ids.push(id);
+    }
+
+    return ids;
+  }
+
+  // Reads embedded power ids from preview root data attributes.
+  function readPowerIdsFromRoot(root) {
+    var raw = root.getAttribute('data-preview-power-ids') || '[]';
+    var parsed = parseJsonSafe(raw, []);
+    return normalizePowerIds(parsed);
+  }
+
+  // Selects power source (form in live mode, root data in static mode).
+  function readPowerIds(root) {
+    var source = root.getAttribute('data-preview-source') || 'static';
+    if (source === 'form') {
+      var formIds = readPowerIdsFromForm(root);
+      if (formIds.length > 0) return formIds;
+    }
+    return readPowerIdsFromRoot(root);
+  }
+
   ns.moveSource = {
-    readMoveSource: readMoveSource
+    readMoveSource: readMoveSource,
+    readPowerIds: readPowerIds
   };
 })();
