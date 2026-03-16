@@ -6,7 +6,6 @@
   var positiveInt = util.positiveInt;
   var coordKey = util.coordKey;
   var closestForm = util.closestForm;
-  var forEachNode = util.forEachNode;
 
   // Initializes one interactive preview instance for a root element.
   function createPreview(root) {
@@ -123,9 +122,10 @@
   // Updates active placement tool and button active styling.
   function setActiveTool(preview, nextTool) {
     preview.state.tool = nextTool;
-    forEachNode(preview.elements.toolButtons, function (button) {
+    for (var i = 0; i < preview.elements.toolButtons.length; i += 1) {
+      var button = preview.elements.toolButtons[i];
       button.classList.toggle('is-active', button.getAttribute('data-preview-tool') === nextTool);
-    });
+    }
   }
 
   // Applies selected tool action to clicked square.
@@ -229,11 +229,14 @@
       onBoardClick(preview, event);
     });
 
-    forEachNode(elements.toolButtons, function (button) {
-      button.addEventListener('click', function () {
-        setActiveTool(preview, button.getAttribute('data-preview-tool') || 'piece');
-      });
-    });
+    for (var i = 0; i < elements.toolButtons.length; i += 1) {
+      var button = elements.toolButtons[i];
+      (function (buttonEl) {
+        buttonEl.addEventListener('click', function () {
+          setActiveTool(preview, buttonEl.getAttribute('data-preview-tool') || 'piece');
+        });
+      })(button);
+    }
 
     if (elements.boardSizeInput) {
       elements.boardSizeInput.addEventListener('change', function () {

@@ -46,12 +46,14 @@
   // Removes out-of-bounds entities and resolves piece/blocker overlap.
   function sanitizeBoardState(state) {
     var nextBlockers = {};
-    Object.keys(state.blockers).forEach(function (key) {
+    var blockerKeys = Object.keys(state.blockers);
+    for (var i = 0; i < blockerKeys.length; i += 1) {
+      var key = blockerKeys[i];
       var point = keyToPoint(key);
       if (insideBoard(point.x, point.y, state.size)) {
         nextBlockers[key] = state.blockers[key];
       }
-    });
+    }
     state.blockers = nextBlockers;
 
     if (!state.piecePos || !insideBoard(state.piecePos.x, state.piecePos.y, state.size)) {

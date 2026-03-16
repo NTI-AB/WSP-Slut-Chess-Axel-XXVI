@@ -3,10 +3,9 @@
   document.addEventListener('DOMContentLoaded', function () {
     var ns = window.PiecePreview || {};
     if (typeof ns.createPreview !== 'function') return;
-
-    Array.prototype.forEach.call(
-      document.querySelectorAll('[data-piece-preview-root]'),
-      ns.createPreview
-    );
+    var roots = document.querySelectorAll('[data-piece-preview-root]');
+    for (var i = 0; i < roots.length; i += 1) {
+      ns.createPreview(roots[i]);
+    }
   });
 })();

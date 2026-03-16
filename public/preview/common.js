@@ -51,7 +51,9 @@
 
   // Runs Array.forEach on NodeLists without depending on modern polyfills.
   function forEachNode(nodeList, callback) {
-    Array.prototype.forEach.call(nodeList, callback);
+    for (var i = 0; i < nodeList.length; i += 1) {
+      callback(nodeList[i], i);
+    }
   }
 
   ns.util = {

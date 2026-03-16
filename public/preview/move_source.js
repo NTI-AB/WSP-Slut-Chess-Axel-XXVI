@@ -4,7 +4,6 @@
   var parseJsonSafe = util.parseJsonSafe;
   var positiveInt = util.positiveInt;
   var closestForm = util.closestForm;
-  var forEachNode = util.forEachNode;
 
   // Reads one enabled movement method config from the form.
   function readCheckedToggleConfig(form, methodId) {
@@ -59,17 +58,18 @@
     var toggles = form.querySelectorAll('[data-method-toggle]');
     var moves = [];
 
-    forEachNode(toggles, function (toggle) {
-      if (!toggle.checked) return;
+    for (var i = 0; i < toggles.length; i += 1) {
+      var toggle = toggles[i];
+      if (!toggle.checked) continue;
 
       var methodId = toggle.getAttribute('data-method-toggle');
       var baseMove = readCheckedToggleConfig(form, methodId);
-      if (!baseMove) return;
+      if (!baseMove) continue;
       moves.push(baseMove);
 
       var secondaryMove = readSecondaryConfig(form, methodId, baseMove);
       if (secondaryMove) moves.push(secondaryMove);
-    });
+    }
 
     return moves;
   }

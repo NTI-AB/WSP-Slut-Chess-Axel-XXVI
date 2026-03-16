@@ -1,4 +1,11 @@
 (function () {
+  // Loops through NodeLists in a simple browser-safe way.
+  function forEachNode(nodeList, callback) {
+    for (var i = 0; i < nodeList.length; i += 1) {
+      callback(nodeList[i], i);
+    }
+  }
+
   // Shows/hides the secondary ray config and updates its opposite mode label.
   function syncSecondary(methodId) {
     var panel = document.querySelector('[data-secondary-ray-config="' + methodId + '"]');
@@ -15,7 +22,8 @@
     panel.style.display = visible ? 'block' : 'none';
 
     var otherMode = mode === 'move' ? 'capture' : 'move';
-    panel.querySelectorAll('[data-secondary-ray-mode-label]').forEach(function (el) {
+    var labels = panel.querySelectorAll('[data-secondary-ray-mode-label]');
+    forEachNode(labels, function (el) {
       el.textContent = otherMode;
     });
   }
@@ -35,7 +43,8 @@
     var toggles = document.querySelectorAll('[data-method-toggle]');
     if (toggles.length === 0) return;
 
-    document.querySelectorAll('select[name^="mode["]').forEach(function (select) {
+    var modeSelects = document.querySelectorAll('select[name^="mode["]');
+    forEachNode(modeSelects, function (select) {
       select.addEventListener('change', function () {
         var match = select.name.match(/^mode\[(\d+)\]$/);
         if (!match) return;
@@ -43,7 +52,7 @@
       });
     });
 
-    toggles.forEach(function (toggle) {
+    forEachNode(toggles, function (toggle) {
       sync(toggle);
       toggle.addEventListener('change', function () { sync(toggle); });
     });
