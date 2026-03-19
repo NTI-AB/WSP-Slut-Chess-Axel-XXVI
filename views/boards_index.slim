@@ -1,6 +1,8 @@
 h1 Boards
 
 /- Board list with quick links to view and edit.
+- owner_id = current_owner_id
+- default_owner_id = default_premade_piece_owner_id
 - if @boards.empty?
   p No boards yet.
 - else
@@ -8,8 +10,11 @@ h1 Boards
     - @boards.each do |board|
       li
         a href="/boards/#{board['id']}" = "#{board['name']} (##{board['id']})"
-        |  - 
-        a href="/boards/#{board['id']}/edit" Edit
+        - if board['owner_id'].to_i == owner_id
+          |  - 
+          a href="/boards/#{board['id']}/edit" Edit
+        - elsif board['owner_id'].to_i == default_owner_id
+          |  - default
         |  - size: #{board['board_size']}
         - if board['description'] && !board['description'].empty?
           |  - #{board['description']}

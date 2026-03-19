@@ -10,10 +10,29 @@ html
       a href="/pieces" Pieces
       |  | 
       a href="/boards" Boards
-    nav
+      |  | 
       a href="/pieces/new" Create piece
       |  | 
       a href="/boards/new" Create board
+      |  | 
+      - if @current_account
+        span Logged in as #{@current_account['username']}
+        |  | 
+        form action="/logout" method="post" style="display:inline;"
+          button type="submit" Logout
+      - else
+        a href="/login" Login
+        |  | 
+        a href="/register" Register
+
+    /- One flash message shown after redirects.
+    - if @flash && @flash['message'] && !@flash['message'].empty?
+      - flash_type = @flash['type'].to_s
+      - flash_bg = flash_type == 'success' ? '#e7f8ec' : '#fdecec'
+      - flash_border = flash_type == 'success' ? '#2f8f4e' : '#b03a3a'
+      p style="padding: 0.6rem 0.75rem; border: 1px solid #{flash_border}; background: #{flash_bg};"
+        strong = flash_type.upcase
+        | : #{@flash['message']}
 
     /- View outlet separator and page-specific content.
     hr

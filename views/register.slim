@@ -1,0 +1,30 @@
+h1 Register
+
+form action="/register" method="post"
+  p
+    label for="username" Username
+    br
+    input#username type="text" name="username" required=true
+
+  p
+    label for="email" Email
+    br
+    input#email type="email" name="email" required=true
+
+  p
+    label for="password" Password
+    br
+    input#password type="password" name="password" required=true
+
+  p
+    label for="confirm" Confirm password
+    br
+    input#confirm type="password" name="confirm" required=true
+
+  p
+    button type="submit" Register
+
+p
+  | Already have an account?
+  |  
+  a href="/login" Login

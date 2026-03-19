@@ -1,6 +1,8 @@
 h1 Pieces
 
 /- Piece listing with optional icon, edit link, and short description.
+- owner_id = current_owner_id
+- default_owner_id = default_premade_piece_owner_id
 ul
   - @pieces.each do |piece|
     li
@@ -8,7 +10,10 @@ ul
         img src=piece['image_path'] alt="#{piece['name']} icon" style="width: 1.5rem; height: 1.5rem; object-fit: fill; vertical-align: middle; border: 1px solid #bbb;"
         |  
       a href="/pieces/#{piece['id']}" = "#{piece['name']} (##{piece['id']})"
-      |  - 
-      a href="/pieces/#{piece['id']}/edit" Edit
+      - if piece['owner_id'].to_i == owner_id
+        |  - 
+        a href="/pieces/#{piece['id']}/edit" Edit
+      - elsif piece['owner_id'].to_i == default_owner_id
+        |  - default
       - if piece['description'] && !piece['description'].empty?
         |  - #{piece['description']}

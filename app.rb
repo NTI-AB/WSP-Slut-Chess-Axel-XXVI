@@ -10,6 +10,34 @@ require 'securerandom'
 
 DB_PATH = 'databas.db'
 ICON_UPLOAD_DIR = File.join('public', 'icons', 'pieces', 'uploads')
+SESSION_SECRET_MIN_LENGTH = 64
+DEFAULT_PREMADE_PIECE_OWNER_ID = 1
+
+session_secret = ENV['SESSION_SECRET']
+if session_secret.nil? || session_secret.bytesize < SESSION_SECRET_MIN_LENGTH
+  warn "SESSION_SECRET missing/too short (#{session_secret&.bytesize || 0}); using temporary secret."
+  session_secret = SecureRandom.hex(64)
+end
+
+enable :sessions
+set :session_secret, session_secret
+
+# Ensures accounts table exists for login/register.
+def ensure_accounts_table!
+  conn = SQLite3::Database.new(DB_PATH)
+  conn.execute <<~SQL
+    CREATE TABLE IF NOT EXISTS accounts (
+      id INTEGER PRIMARY KEY,
+      username TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL
+    )
+  SQL
+ensure
+  conn&.close
+end
 
 # Ensures older DB files get the icon base color column before app logic runs.
 def ensure_pieces_icon_base_color_column!
@@ -23,6 +51,7 @@ ensure
   conn&.close
 end
 
+ensure_accounts_table!
 ensure_pieces_icon_base_color_column!
 
 # Ensures boards table exists for board CRUD.
@@ -49,12 +78,47 @@ end
 ensure_boards_table!
 
 helpers do
-  # Returns current owner id (owner 0 until accounts/session are implemented).
+  # Returns currently signed-in account row (or nil).
+  def current_account
+    return @current_account if defined?(@current_account_loaded) && @current_account_loaded
+    @current_account_loaded = true
+    @current_account = nil
+    return nil unless session[:account_id]
+
+    @current_account = db.get_first_row(
+      'SELECT id, username, email FROM accounts WHERE id = ?',
+      [session[:account_id].to_i]
+    )
+  rescue SQLite3::SQLException
+    @current_account = nil
+  end
+
+  # Stores one flash message in session.
+  def set_flash(type, message)
+    session[:flash] = { 'type' => type.to_s, 'message' => message.to_s }
+  end
+
+  # Reads and clears one flash message from session.
+  def take_flash
+    session.delete(:flash)
+  end
+
+  # Redirects to login when no account is signed in.
+  def require_login!
+    return if current_account
+    set_flash('error', 'You need to login first.')
+    redirect '/login'
+  end
+
+  # Returns current owner id (0 for guest).
   def current_owner_id
-    if respond_to?(:session) && session && session[:account_id].to_i.positive?
-      return session[:account_id].to_i
-    end
-    0
+    account = current_account
+    account ? account['id'].to_i : 0
+  end
+
+  # Returns owner id used by premade piece library.
+  def default_premade_piece_owner_id
+    DEFAULT_PREMADE_PIECE_OWNER_ID
   end
 
   # Returns a memoized DB connection configured to return row hashes.
@@ -66,26 +130,74 @@ helpers do
     end
   end
 
-  # Finds one active, top-level piece by id.
-  def piece_by_id(id)
+  # Finds one visible piece by id (defaults + current owner's pieces).
+  def piece_visible_by_id_for_owner(id, owner_id)
+    default_owner_id = default_premade_piece_owner_id
+    if owner_id.zero?
+      db.get_first_row(
+        'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND source_piece_id IS NULL AND owner_id = ?',
+        [id, default_owner_id]
+      )
+    else
+      db.get_first_row(
+        'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND source_piece_id IS NULL AND owner_id IN (?, ?)',
+        [id, default_owner_id, owner_id]
+      )
+    end
+  end
+
+  # Finds one piece by id owned by current owner.
+  def piece_owned_by_id_for_owner(id, owner_id)
     db.get_first_row(
-      'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND owner_id = 0 AND source_piece_id IS NULL',
-      id
+      'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND source_piece_id IS NULL AND owner_id = ?',
+      [id, owner_id]
     )
+  end
+
+  # Lists pieces visible for one owner (defaults + own).
+  def pieces_for_owner(owner_id)
+    default_owner_id = default_premade_piece_owner_id
+    if owner_id.zero?
+      db.execute(
+        <<~SQL,
+          SELECT id, name, description, image_path, icon_base_color, created_at, owner_id
+          FROM pieces
+          WHERE deleted_at IS NULL
+            AND source_piece_id IS NULL
+            AND owner_id = ?
+          ORDER BY id
+        SQL
+        [default_owner_id]
+      )
+    else
+      db.execute(
+        <<~SQL,
+          SELECT id, name, description, image_path, icon_base_color, created_at, owner_id
+          FROM pieces
+          WHERE deleted_at IS NULL
+            AND source_piece_id IS NULL
+            AND owner_id IN (?, ?)
+          ORDER BY id
+        SQL
+        [default_owner_id, owner_id]
+      )
+    end
   end
 
   # Lists piece rows available for board editing (defaults + current owner pieces).
   def available_pieces_for_owner(owner_id)
+    default_owner_id = default_premade_piece_owner_id
     if owner_id.zero?
       db.execute(
-        <<~SQL
+        <<~SQL,
           SELECT id, name, image_path, icon_base_color
           FROM pieces
           WHERE deleted_at IS NULL
             AND source_piece_id IS NULL
-            AND owner_id = 0
+            AND owner_id = ?
           ORDER BY LOWER(name), id
         SQL
+        [default_owner_id]
       )
     else
       db.execute(
@@ -94,30 +206,72 @@ helpers do
           FROM pieces
           WHERE deleted_at IS NULL
             AND source_piece_id IS NULL
-            AND owner_id IN (0, ?)
+            AND owner_id IN (?, ?)
           ORDER BY LOWER(name), id
         SQL
-        [owner_id]
+        [default_owner_id, owner_id]
       )
     end
   end
 
   # Returns active boards for one owner.
   def boards_for_owner(owner_id)
-    db.execute(
-      <<~SQL,
-        SELECT id, name, description, board_size, is_public, created_at, updated_at
-        FROM boards
-        WHERE deleted_at IS NULL
-          AND owner_id = ?
-        ORDER BY id DESC
-      SQL
-      [owner_id]
-    )
+    default_owner_id = default_premade_piece_owner_id
+    if owner_id.zero?
+      db.execute(
+        <<~SQL,
+          SELECT id, name, description, board_size, is_public, created_at, updated_at, owner_id
+          FROM boards
+          WHERE deleted_at IS NULL
+            AND owner_id = ?
+          ORDER BY id DESC
+        SQL
+        [default_owner_id]
+      )
+    else
+      db.execute(
+        <<~SQL,
+          SELECT id, name, description, board_size, is_public, created_at, updated_at, owner_id
+          FROM boards
+          WHERE deleted_at IS NULL
+            AND owner_id IN (?, ?)
+          ORDER BY id DESC
+        SQL
+        [default_owner_id, owner_id]
+      )
+    end
   end
 
-  # Finds one board by id, scoped to owner.
-  def board_by_id_for_owner(id, owner_id)
+  # Finds one board visible to owner (default + own).
+  def board_visible_by_id_for_owner(id, owner_id)
+    default_owner_id = default_premade_piece_owner_id
+    if owner_id.zero?
+      db.get_first_row(
+        <<~SQL,
+          SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
+          FROM boards
+          WHERE id = ?
+            AND deleted_at IS NULL
+            AND owner_id = ?
+        SQL
+        [id, default_owner_id]
+      )
+    else
+      db.get_first_row(
+        <<~SQL,
+          SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
+          FROM boards
+          WHERE id = ?
+            AND deleted_at IS NULL
+            AND owner_id IN (?, ?)
+        SQL
+        [id, default_owner_id, owner_id]
+      )
+    end
+  end
+
+  # Finds one board by id owned by current owner.
+  def board_owned_by_id_for_owner(id, owner_id)
     db.get_first_row(
       <<~SQL,
         SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
@@ -396,8 +550,108 @@ after do
   @db&.close
 end
 
+# Exposes flash and current account to all views.
+before do
+  @flash = take_flash
+  @current_account = current_account
+end
+
 # Root redirects to pieces index.
 get '/' do
+  redirect '/pieces'
+end
+
+# Shows login page.
+get '/login' do
+  slim :login
+end
+
+# Authenticates user and stores account id in session.
+post '/login' do
+  email = params[:email].to_s.strip.downcase
+  password = params[:password].to_s
+
+  if email.empty? || password.empty?
+    set_flash('error', 'Fill in email and password.')
+    redirect '/login'
+  end
+
+  account = db.get_first_row('SELECT id, username, email, password_hash FROM accounts WHERE email = ?', [email])
+  authenticated = false
+
+  if account && account['password_hash']
+    begin
+      authenticated = BCrypt::Password.new(account['password_hash']) == password
+    rescue BCrypt::Errors::InvalidHash
+      authenticated = false
+    end
+  end
+
+  if account && authenticated
+    session[:account_id] = account['id'].to_i
+    set_flash('success', 'Logged in.')
+    redirect '/pieces'
+  else
+    set_flash('error', 'Incorrect email or password.')
+    redirect '/login'
+  end
+rescue SQLite3::SQLException
+  set_flash('error', 'Login failed due to a database error.')
+  redirect '/login'
+end
+
+# Shows register page.
+get '/register' do
+  slim :register
+end
+
+# Creates account and logs in directly.
+post '/register' do
+  username = params[:username].to_s.strip
+  email = params[:email].to_s.strip.downcase
+  password = params[:password].to_s
+  confirm = params[:confirm].to_s
+
+  if username.empty? || email.empty? || password.empty? || confirm.empty?
+    set_flash('error', 'Fill in all fields.')
+    redirect '/register'
+  end
+
+  if password != confirm
+    set_flash('error', 'Passwords do not match.')
+    redirect '/register'
+  end
+
+  if password.length < 6
+    set_flash('error', 'Password must be at least 6 characters.')
+    redirect '/register'
+  end
+
+  existing = db.get_first_row('SELECT id FROM accounts WHERE email = ?', [email])
+  if existing
+    set_flash('error', 'Email is already in use.')
+    redirect '/register'
+  end
+
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  password_hash = BCrypt::Password.create(password)
+  db.execute(
+    'INSERT INTO accounts (username, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
+    [username, email, password_hash, now, now]
+  )
+
+  session[:account_id] = db.last_insert_row_id
+  set_flash('success', 'Account created and logged in.')
+  redirect '/pieces'
+rescue SQLite3::SQLException
+  set_flash('error', 'Could not create account due to a database error.')
+  redirect '/register'
+end
+
+# Clears login session.
+post '/logout' do
+  session.delete(:account_id)
+  set_flash('success', 'Logged out.')
   redirect '/pieces'
 end
 
@@ -410,6 +664,7 @@ end
 
 # Renders board creation form with simple click placement editor.
 get '/boards/new' do
+  require_login!
   owner_id = current_owner_id
   @available_pieces = available_pieces_for_owner(owner_id)
   @board = {
@@ -425,6 +680,7 @@ end
 
 # Creates a board from submitted editor JSON.
 post '/boards' do
+  require_login!
   owner_id = current_owner_id
   available_piece_ids = available_pieces_for_owner(owner_id).map { |row| row['id'].to_i }
 
@@ -469,7 +725,7 @@ get '/boards/:id' do
   owner_id = current_owner_id
   id = params[:id].to_i
 
-  @board = board_by_id_for_owner(id, owner_id)
+  @board = board_visible_by_id_for_owner(id, owner_id)
   halt 404, 'Board not found' unless @board
 
   @available_pieces = available_pieces_for_owner(owner_id)
@@ -483,11 +739,12 @@ end
 
 # Renders board edit form with current placements loaded.
 get '/boards/:id/edit' do
+  require_login!
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
   owner_id = current_owner_id
   id = params[:id].to_i
 
-  @board = board_by_id_for_owner(id, owner_id)
+  @board = board_owned_by_id_for_owner(id, owner_id)
   halt 404, 'Board not found' unless @board
 
   @available_pieces = available_pieces_for_owner(owner_id)
@@ -497,11 +754,12 @@ end
 
 # Updates a board and replaces its placements JSON.
 post '/boards/:id/update' do
+  require_login!
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
   owner_id = current_owner_id
   id = params[:id].to_i
 
-  board = board_by_id_for_owner(id, owner_id)
+  board = board_owned_by_id_for_owner(id, owner_id)
   halt 404, 'Board not found' unless board
 
   available_piece_ids = available_pieces_for_owner(owner_id).map { |row| row['id'].to_i }
@@ -539,11 +797,12 @@ end
 
 # Soft deletes one board.
 post '/boards/:id/delete' do
+  require_login!
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
   owner_id = current_owner_id
   id = params[:id].to_i
 
-  board = board_by_id_for_owner(id, owner_id)
+  board = board_owned_by_id_for_owner(id, owner_id)
   halt 404, 'Board not found' unless board
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -553,20 +812,14 @@ end
 
 # Lists active pieces.
 get '/pieces' do
-  @pieces = db.execute(<<~SQL)
-    SELECT id, name, description, image_path, icon_base_color, created_at
-    FROM pieces
-    WHERE deleted_at IS NULL
-      AND owner_id = 0
-      AND source_piece_id IS NULL
-    ORDER BY id
-  SQL
+  @pieces = pieces_for_owner(current_owner_id)
 
   slim :index
 end
 
 # Renders new piece form.
 get '/pieces/new' do
+  require_login!
   @movement_methods = db.execute('SELECT id, key, name, kind, vectors_json, supports_ray_limit, description FROM movement_methods ORDER BY id')
   @powers = db.execute('SELECT id, name, description FROM powers ORDER BY id')
   slim(:new)
@@ -574,6 +827,8 @@ end
 
 # Creates a piece and its configured movement rows.
 post '/pieces' do
+  require_login!
+  owner_id = current_owner_id
   name = params[:name].to_s.strip
   description = params[:description].to_s.strip
   icon_upload = params[:icon_file]
@@ -602,7 +857,7 @@ post '/pieces' do
   db.execute(
     'INSERT INTO pieces (owner_id, source_piece_id, name, description, image_path, icon_base_color, power_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [
-      0,
+      owner_id,
       nil,
       name,
       (description.empty? ? nil : description),
@@ -662,10 +917,12 @@ end
 
 # Renders edit form with current move config grouped per method.
 get '/pieces/:id/edit' do
+  require_login!
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
+  owner_id = current_owner_id
 
-  @piece = piece_by_id(id)
+  @piece = piece_owned_by_id_for_owner(id, owner_id)
   halt 404, 'Piece not found' unless @piece
 
   @movement_methods = db.execute('SELECT id, key, name, kind, vectors_json, supports_ray_limit, description FROM movement_methods ORDER BY id')
@@ -705,10 +962,12 @@ end
 
 # Updates piece fields and rewrites its movement rows.
 post '/pieces/:id/update' do
+  require_login!
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
+  owner_id = current_owner_id
 
-  piece = piece_by_id(id)
+  piece = piece_owned_by_id_for_owner(id, owner_id)
   halt 404, 'Piece not found' unless piece
 
   name = params[:name].to_s.strip
@@ -789,10 +1048,12 @@ end
 
 # Deletes one piece.
 post '/pieces/:id/delete' do
+  require_login!
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
+  owner_id = current_owner_id
 
-  piece = piece_by_id(id)
+  piece = piece_owned_by_id_for_owner(id, owner_id)
   halt 404, 'Piece not found' unless piece
 
   db.execute('DELETE FROM pieces WHERE id = ?', [id])
@@ -803,8 +1064,9 @@ end
 get '/pieces/:id' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
+  owner_id = current_owner_id
 
-  @piece = piece_by_id(id)
+  @piece = piece_visible_by_id_for_owner(id, owner_id)
   halt 404, 'Piece not found' unless @piece
 
   power_ids = parse_power_ids_json(@piece['power_ids'])

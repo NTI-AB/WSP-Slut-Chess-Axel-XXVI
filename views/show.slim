@@ -1,4 +1,5 @@
 h1 = @piece['name']
+- owner_id = current_owner_id
 
 /- Optional icon preview and icon base color metadata.
 - if @piece['image_path'] && !@piece['image_path'].empty?
@@ -18,13 +19,14 @@ p
     strong Description:
     |  #{@piece['description']}
 
-/- Edit/delete controls.
-p
-  a href="/pieces/#{@piece['id']}/edit" Edit piece
+/- Edit/delete controls for owned pieces.
+- if @piece['owner_id'].to_i == owner_id
+  p
+    a href="/pieces/#{@piece['id']}/edit" Edit piece
 
-p
-  form action="/pieces/#{@piece['id']}/delete" method="post"
-    button type="submit" Delete piece
+  p
+    form action="/pieces/#{@piece['id']}/delete" method="post"
+      button type="submit" Delete piece
 
 h2 Special Attributes
 

@@ -16,6 +16,7 @@ p
 /- Read-only rendering of both sides on one board.
 - size = @board['board_size'].to_i
 - size = 8 if size <= 0
+- owner_id = current_owner_id
 
 div class="board-editor board-editor--readonly"
   div class="board-editor__board board-editor__board--static" style="grid-template-columns: repeat(#{size}, 2.8rem);"
@@ -37,12 +38,13 @@ div class="board-editor board-editor--readonly"
               span class=("board-editor__piece-label #{placement_color == 'white' ? 'is-white' : 'is-black'}")
                 = piece ? piece['name'][0, 1].upcase : '?'
 
-p
-  a href="/boards/#{@board['id']}/edit" Edit board
+- if @board['owner_id'].to_i == owner_id
+  p
+    a href="/boards/#{@board['id']}/edit" Edit board
 
-p
-  form action="/boards/#{@board['id']}/delete" method="post"
-    button type="submit" Delete board
+  p
+    form action="/boards/#{@board['id']}/delete" method="post"
+      button type="submit" Delete board
 
 p
   a href="/boards" Back to boards

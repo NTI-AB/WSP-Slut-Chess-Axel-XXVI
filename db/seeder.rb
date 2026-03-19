@@ -6,6 +6,18 @@ DB_PATH = 'databas.db'
 MOVEMENT_JSON_PATH = File.join(__dir__, 'piece_movement.json')
 DEFAULT_PREVIEW_BOARD_JSON = '{"size":8,"placed":[]}'
 DEFAULT_POWER_IDS_JSON = '[]'
+DEFAULT_PREMADE_PIECE_OWNER_ID = 1
+
+ACCOUNT_SEEDS = [
+  {
+    id: 1,
+    username: 'admin',
+    email: 'admin@gmail.com',
+    password_hash: '$2a$12$oqDxmjA1BcerlMRAr0PUfO8c.WHmpCEkvy9xooaqr/prOK8xtBGHG',
+    created_at: '2026-03-19T15:16:00Z',
+    updated_at: '2026-03-19T15:16:00Z'
+  }
+].freeze
 
 MOVEMENT_METHODS = [
   {
@@ -204,6 +216,8 @@ def seed!(db)
   drop_tables(db)
   puts 'Creating tables...'
   create_tables(db)
+  puts 'Populating accounts...'
+  populate_accounts(db)
   puts 'Populating movement methods...'
   populate_movement_methods(db)
   puts 'Populating powers...'
@@ -220,6 +234,7 @@ def seed!(db)
 end
 
 def drop_tables(db)
+  db.execute('DROP TABLE IF EXISTS accounts')
   db.execute('DROP TABLE IF EXISTS boards')
   db.execute('DROP TABLE IF EXISTS piece_powers')
   db.execute('DROP TABLE IF EXISTS powers')
@@ -229,6 +244,17 @@ def drop_tables(db)
 end
 
 def create_tables(db)
+  db.execute <<~SQL
+    CREATE TABLE IF NOT EXISTS accounts (
+      id INTEGER PRIMARY KEY,
+      username TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      password_hash TEXT NOT NULL,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL
+    )
+  SQL
+
   db.execute <<~SQL
     CREATE TABLE IF NOT EXISTS pieces (
       id INTEGER PRIMARY KEY,
@@ -303,6 +329,22 @@ def create_tables(db)
   SQL
 end
 
+def populate_accounts(db)
+  ACCOUNT_SEEDS.each do |account|
+    db.execute(
+      'INSERT INTO accounts (id, username, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [
+        account[:id],
+        account[:username],
+        account[:email],
+        account[:password_hash],
+        account[:created_at],
+        account[:updated_at]
+      ]
+    )
+  end
+end
+
 def populate_movement_methods(db)
   MOVEMENT_METHODS.each do |method|
     db.execute(
@@ -334,7 +376,7 @@ def populate_pieces(db)
       SQL
       [
         piece[:id],
-        0,
+        DEFAULT_PREMADE_PIECE_OWNER_ID,
         nil,
         piece[:name],
         piece[:description],
@@ -386,7 +428,7 @@ def populate_boards(db)
       'INSERT INTO boards (id, owner_id, name, description, board_size, placements_json, is_public, deleted_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         board[:id],
-        0,
+        DEFAULT_PREMADE_PIECE_OWNER_ID,
         board[:name],
         board[:description],
         board[:board_size],
