@@ -25,7 +25,38 @@ end
 
 ensure_pieces_icon_base_color_column!
 
+# Ensures boards table exists for board CRUD.
+def ensure_boards_table!
+  conn = SQLite3::Database.new(DB_PATH)
+  conn.execute <<~SQL
+    CREATE TABLE IF NOT EXISTS boards (
+      id INTEGER PRIMARY KEY,
+      owner_id INTEGER NOT NULL DEFAULT 0,
+      name TEXT NOT NULL,
+      description TEXT,
+      board_size INTEGER NOT NULL DEFAULT 8,
+      placements_json TEXT NOT NULL DEFAULT '[]',
+      is_public INTEGER NOT NULL DEFAULT 0 CHECK (is_public IN (0, 1)),
+      deleted_at DATETIME,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL
+    )
+  SQL
+ensure
+  conn&.close
+end
+
+ensure_boards_table!
+
 helpers do
+  # Returns current owner id (owner 0 until accounts/session are implemented).
+  def current_owner_id
+    if respond_to?(:session) && session && session[:account_id].to_i.positive?
+      return session[:account_id].to_i
+    end
+    0
+  end
+
   # Returns a memoized DB connection configured to return row hashes.
   def db
     @db ||= begin
@@ -40,6 +71,62 @@ helpers do
     db.get_first_row(
       'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND owner_id = 0 AND source_piece_id IS NULL',
       id
+    )
+  end
+
+  # Lists piece rows available for board editing (defaults + current owner pieces).
+  def available_pieces_for_owner(owner_id)
+    if owner_id.zero?
+      db.execute(
+        <<~SQL
+          SELECT id, name, image_path, icon_base_color
+          FROM pieces
+          WHERE deleted_at IS NULL
+            AND source_piece_id IS NULL
+            AND owner_id = 0
+          ORDER BY LOWER(name), id
+        SQL
+      )
+    else
+      db.execute(
+        <<~SQL,
+          SELECT id, name, image_path, icon_base_color
+          FROM pieces
+          WHERE deleted_at IS NULL
+            AND source_piece_id IS NULL
+            AND owner_id IN (0, ?)
+          ORDER BY LOWER(name), id
+        SQL
+        [owner_id]
+      )
+    end
+  end
+
+  # Returns active boards for one owner.
+  def boards_for_owner(owner_id)
+    db.execute(
+      <<~SQL,
+        SELECT id, name, description, board_size, is_public, created_at, updated_at
+        FROM boards
+        WHERE deleted_at IS NULL
+          AND owner_id = ?
+        ORDER BY id DESC
+      SQL
+      [owner_id]
+    )
+  end
+
+  # Finds one board by id, scoped to owner.
+  def board_by_id_for_owner(id, owner_id)
+    db.get_first_row(
+      <<~SQL,
+        SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
+        FROM boards
+        WHERE id = ?
+          AND deleted_at IS NULL
+          AND owner_id = ?
+      SQL
+      [id, owner_id]
     )
   end
 
@@ -103,6 +190,122 @@ helpers do
   # JSON helper used inside Slim partials.
   def json_dump(value)
     JSON.generate(value)
+  end
+
+  # Clamps board size into supported preview/editor range.
+  def normalized_board_size(value)
+    size = value.to_i
+    size = 8 if size <= 0
+    size = 4 if size < 4
+    size = 20 if size > 20
+    size
+  end
+
+  # Parses board placements JSON and validates coordinates, color and piece ids.
+  def parse_and_validate_placements_json(raw_json, board_size:, allowed_piece_ids:)
+    json = raw_json.to_s.strip
+    json = '[]' if json.empty?
+    parsed = JSON.parse(json)
+    parsed = [] unless parsed.is_a?(Array)
+
+    placements = []
+    errors = []
+    seen_coords = {}
+    player_zone_start = board_size / 2
+
+    parsed.each_with_index do |entry, idx|
+      unless entry.is_a?(Hash)
+        errors << "Placement ##{idx + 1} must be an object."
+        next
+      end
+
+      x = begin Integer(entry['x']); rescue StandardError; nil; end
+      y = begin Integer(entry['y']); rescue StandardError; nil; end
+      piece_id = begin Integer(entry['piece_id']); rescue StandardError; nil; end
+      color = entry['color'].to_s
+
+      if x.nil? || y.nil?
+        errors << "Placement ##{idx + 1} must have integer x and y."
+        next
+      end
+
+      unless x.between?(0, board_size - 1) && y.between?(0, board_size - 1)
+        errors << "Placement ##{idx + 1} is outside board size #{board_size}."
+        next
+      end
+
+      if piece_id.nil? || !allowed_piece_ids.include?(piece_id)
+        errors << "Placement ##{idx + 1} has invalid piece_id."
+        next
+      end
+
+      unless color == 'white'
+        errors << "Placement ##{idx + 1} must use white color."
+        next
+      end
+
+      if y < player_zone_start
+        errors << "Placement ##{idx + 1} must be on the bottom half."
+        next
+      end
+
+      key = "#{x},#{y}"
+      if seen_coords[key]
+        errors << "Duplicate square used at #{key}."
+        next
+      end
+      seen_coords[key] = true
+
+      placements << { 'x' => x, 'y' => y, 'piece_id' => piece_id, 'color' => color }
+    end
+
+    [placements, errors]
+  rescue JSON::ParserError
+    [[], ['placements_json must be valid JSON.']]
+  end
+
+  # Parses stored placements JSON into an array for views.
+  def parse_placements_for_view(raw_json)
+    parsed = JSON.parse(raw_json.to_s)
+    return parsed if parsed.is_a?(Array)
+    []
+  rescue JSON::ParserError
+    []
+  end
+
+  # Creates a hash map by "x,y" to speed up board rendering in Slim.
+  def placements_map_for_view(placements)
+    map = {}
+    placements.each do |entry|
+      next unless entry.is_a?(Hash)
+      key = "#{entry['x']},#{entry['y']}"
+      map[key] = entry
+    end
+    map
+  end
+
+  # Mirrors placements 180 degrees for opposite-side board preview.
+  def flipped_placements_for_view(placements, board_size)
+    size = normalized_board_size(board_size)
+    flipped = []
+
+    placements.each do |entry|
+      next unless entry.is_a?(Hash)
+
+      x = entry['x'].to_i
+      y = entry['y'].to_i
+      piece_id = entry['piece_id'].to_i
+      next unless x.between?(0, size - 1) && y.between?(0, size - 1)
+
+      flipped << {
+        'x' => x,
+        'y' => (size - 1) - y,
+        'piece_id' => piece_id,
+        'color' => 'black'
+      }
+    end
+
+    flipped
   end
 
   # Normalizes mode input to accepted enum values.
@@ -196,6 +399,156 @@ end
 # Root redirects to pieces index.
 get '/' do
   redirect '/pieces'
+end
+
+# Lists active boards for current owner.
+get '/boards' do
+  owner_id = current_owner_id
+  @boards = boards_for_owner(owner_id)
+  slim :boards_index
+end
+
+# Renders board creation form with simple click placement editor.
+get '/boards/new' do
+  owner_id = current_owner_id
+  @available_pieces = available_pieces_for_owner(owner_id)
+  @board = {
+    'name' => '',
+    'description' => '',
+    'board_size' => 8,
+    'placements_json' => '[]',
+    'is_public' => 0
+  }
+  @editor_mode = :new
+  slim :boards_new
+end
+
+# Creates a board from submitted editor JSON.
+post '/boards' do
+  owner_id = current_owner_id
+  available_piece_ids = available_pieces_for_owner(owner_id).map { |row| row['id'].to_i }
+
+  name = params[:name].to_s.strip
+  description = params[:description].to_s.strip
+  board_size = normalized_board_size(params[:board_size])
+  placements_raw = params[:placements_json].to_s
+  is_public = params[:is_public].to_s == '1' ? 1 : 0
+
+  halt 422, 'Board name is required.' if name.empty?
+
+  placements, errors = parse_and_validate_placements_json(
+    placements_raw,
+    board_size: board_size,
+    allowed_piece_ids: available_piece_ids
+  )
+  halt 422, errors.join(' ') unless errors.empty?
+
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+  db.execute(
+    'INSERT INTO boards (owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [
+      owner_id,
+      name,
+      (description.empty? ? nil : description),
+      board_size,
+      JSON.generate(placements),
+      is_public,
+      now,
+      now
+    ]
+  )
+
+  board_id = db.last_insert_row_id
+  redirect "/boards/#{board_id}"
+end
+
+# Shows one board in read-only mode.
+get '/boards/:id' do
+  halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
+  owner_id = current_owner_id
+  id = params[:id].to_i
+
+  @board = board_by_id_for_owner(id, owner_id)
+  halt 404, 'Board not found' unless @board
+
+  @available_pieces = available_pieces_for_owner(owner_id)
+  @piece_by_id = @available_pieces.each_with_object({}) { |row, memo| memo[row['id'].to_i] = row }
+  @placements = parse_placements_for_view(@board['placements_json'])
+  @flipped_placements = flipped_placements_for_view(@placements, @board['board_size'])
+  @combined_placements_map = placements_map_for_view(@placements + @flipped_placements)
+
+  slim :boards_show
+end
+
+# Renders board edit form with current placements loaded.
+get '/boards/:id/edit' do
+  halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
+  owner_id = current_owner_id
+  id = params[:id].to_i
+
+  @board = board_by_id_for_owner(id, owner_id)
+  halt 404, 'Board not found' unless @board
+
+  @available_pieces = available_pieces_for_owner(owner_id)
+  @editor_mode = :edit
+  slim :boards_edit
+end
+
+# Updates a board and replaces its placements JSON.
+post '/boards/:id/update' do
+  halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
+  owner_id = current_owner_id
+  id = params[:id].to_i
+
+  board = board_by_id_for_owner(id, owner_id)
+  halt 404, 'Board not found' unless board
+
+  available_piece_ids = available_pieces_for_owner(owner_id).map { |row| row['id'].to_i }
+  name = params[:name].to_s.strip
+  description = params[:description].to_s.strip
+  board_size = normalized_board_size(params[:board_size])
+  placements_raw = params[:placements_json].to_s
+  is_public = params[:is_public].to_s == '1' ? 1 : 0
+
+  halt 422, 'Board name is required.' if name.empty?
+
+  placements, errors = parse_and_validate_placements_json(
+    placements_raw,
+    board_size: board_size,
+    allowed_piece_ids: available_piece_ids
+  )
+  halt 422, errors.join(' ') unless errors.empty?
+
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  db.execute(
+    'UPDATE boards SET name = ?, description = ?, board_size = ?, placements_json = ?, is_public = ?, updated_at = ? WHERE id = ?',
+    [
+      name,
+      (description.empty? ? nil : description),
+      board_size,
+      JSON.generate(placements),
+      is_public,
+      now,
+      id
+    ]
+  )
+
+  redirect "/boards/#{id}"
+end
+
+# Soft deletes one board.
+post '/boards/:id/delete' do
+  halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
+  owner_id = current_owner_id
+  id = params[:id].to_i
+
+  board = board_by_id_for_owner(id, owner_id)
+  halt 404, 'Board not found' unless board
+
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  db.execute('UPDATE boards SET deleted_at = ?, updated_at = ? WHERE id = ?', [now, now, id])
+  redirect '/boards'
 end
 
 # Lists active pieces.
@@ -454,6 +807,9 @@ get '/pieces/:id' do
   @piece = piece_by_id(id)
   halt 404, 'Piece not found' unless @piece
 
+  power_ids = parse_power_ids_json(@piece['power_ids'])
+  @preview_power_ids = power_ids
+
   @piece_moves = db.execute(<<~SQL, [id])
     SELECT pm.id, pm.movement_method_id, pm.name, pm.kind, pm.ray_limit, pm.mode, pm.color_scope, pm.first_move_only, pm.vectors_json,
            mm.name AS method_name, mm.description AS method_description
@@ -464,7 +820,6 @@ get '/pieces/:id' do
   SQL
   @preview_piece_moves = preview_piece_moves_payload(@piece_moves)
 
-  power_ids = parse_power_ids_json(@piece['power_ids'])
   @special_powers = special_powers_by_ids(power_ids)
 
   slim :show

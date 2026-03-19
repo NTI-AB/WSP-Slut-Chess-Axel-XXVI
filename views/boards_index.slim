@@ -1,0 +1,18 @@
+h1 Boards
+
+/- Board list with quick links to view and edit.
+- if @boards.empty?
+  p No boards yet.
+- else
+  ul
+    - @boards.each do |board|
+      li
+        a href="/boards/#{board['id']}" = "#{board['name']} (##{board['id']})"
+        |  - 
+        a href="/boards/#{board['id']}/edit" Edit
+        |  - size: #{board['board_size']}
+        - if board['description'] && !board['description'].empty?
+          |  - #{board['description']}
+
+p
+  a href="/boards/new" Create new board

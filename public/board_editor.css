@@ -1,0 +1,130 @@
+.board-editor {
+  border: 1px solid #bbb;
+  background: #fafafa;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.board-editor__hint {
+  margin-top: 0;
+}
+
+.board-editor__hint--strong {
+  font-weight: 600;
+}
+
+.board-editor__controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.board-editor__controls p {
+  margin: 0;
+}
+
+.board-editor__controls button.is-active {
+  outline: 2px solid #222;
+}
+
+.board-editor__selected {
+  font-family: monospace;
+}
+
+.board-editor__palette {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.board-editor__piece-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid #999;
+  background: #fff;
+  padding: 0.35rem 0.45rem;
+  cursor: pointer;
+}
+
+.board-editor__piece-button img {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: fill;
+}
+
+.board-editor__piece-button.is-selected {
+  border-color: #1f4db8;
+  box-shadow: 0 0 0 2px rgba(31, 77, 184, 0.2);
+}
+
+.board-editor__board {
+  display: grid;
+  gap: 0;
+  width: max-content;
+  border: 2px solid #333;
+  background: #333;
+}
+
+.board-editor__square {
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.board-editor__square.is-light {
+  background: #f0d9b5;
+}
+
+.board-editor__square.is-dark {
+  background: #b58863;
+}
+
+.board-editor__square.is-opponent-zone {
+  cursor: not-allowed;
+}
+
+.board-editor__square.is-opponent-zone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(90, 90, 90, 0.45);
+  pointer-events: none;
+}
+
+.board-editor__piece-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.board-editor__piece-icon.is-inverted {
+  filter: invert(1);
+}
+
+.board-editor__piece-label {
+  font: 700 0.95rem/1 monospace;
+  pointer-events: none;
+}
+
+.board-editor__piece-label.is-white {
+  color: #efefef;
+  text-shadow: 0 1px 0 #222;
+}
+
+.board-editor__piece-label.is-black {
+  color: #1e1e1e;
+}
+
+.board-editor--readonly .board-editor__square {
+  cursor: default;
+}

@@ -1,0 +1,4 @@
+h1 Edit Board
+
+/- Reuses shared board editor partial for board updates.
+== slim :_board_editor, locals: { board: @board, available_pieces: @available_pieces, form_action: "/boards/#{@board['id']}/update", submit_label: 'Save board', cancel_path: "/boards/#{@board['id']}" }

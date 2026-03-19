@@ -1,0 +1,73 @@
+/- Shared board editor form fields and interactive board UI.
+- _board_name = board['name'].to_s
+- _board_description = board['description'].to_s
+- _board_size = board['board_size'].to_i
+- _board_size = 8 if _board_size <= 0
+- _placements_json = board['placements_json'].to_s
+- _placements_json = '[]' if _placements_json.empty?
+- _is_public = board['is_public'].to_i == 1
+- _pieces_payload = available_pieces.map { |piece| { id: piece['id'].to_i, name: piece['name'], image_path: piece['image_path'], icon_base_color: (piece['icon_base_color'] || 'black') } }
+
+link rel="stylesheet" href="/board_editor.css"
+script src="/board_editor.js" defer=true
+
+form action=form_action method="post"
+  p
+    label for="board_name" Name
+    br
+    input#board_name type="text" name="name" value=_board_name required=true
+
+  p
+    label for="board_description" Description
+    br
+    textarea#board_description name="description" rows="3" cols="60" = _board_description
+
+  p
+    label for="board_size" Board size
+    br
+    input#board_size type="number" name="board_size" min="4" max="20" value=_board_size data-board-size-input=true
+
+  p
+    label
+      input type="checkbox" name="is_public" value="1" checked=_is_public
+      |  Public board
+
+  /- Hidden payload that receives final placements JSON from board_editor.js.
+  input type="hidden" name="placements_json" value=_placements_json data-board-placements-input=true
+
+  /- Main editor root with all initial state embedded as data attributes.
+  section class="board-editor" data-board-editor-root=true data-board-size=_board_size data-board-placements=_placements_json data-board-pieces=json_dump(_pieces_payload)
+    p class="board-editor__hint"
+      | Pick a piece in the palette, then click a square on the bottom half to place it.
+    p class="board-editor__hint board-editor__hint--strong"
+      | Top half is locked (opponent side). All placed pieces are saved as white.
+
+    div class="board-editor__controls"
+      p
+        strong Placement tool
+        br
+        button type="button" data-board-tool="piece" class="is-active" Place
+        |  
+        button type="button" data-board-tool="erase" Erase
+
+      p
+        button type="button" data-board-reset=true Reset board
+
+    h2 Piece Palette
+    p class="board-editor__selected" data-board-selected-text=true No piece selected.
+    div class="board-editor__palette" data-board-palette=true
+      - available_pieces.each do |piece|
+        - icon_path = piece['image_path'].to_s
+        - icon_base_color = (piece['icon_base_color'] || 'black').to_s
+        button type="button" class="board-editor__piece-button" data-piece-picker=true data-piece-id=piece['id'] data-piece-name=piece['name'] data-piece-icon=icon_path data-piece-icon-base-color=icon_base_color
+          - if icon_path && !icon_path.empty?
+            img src=icon_path alt="#{piece['name']} icon"
+          span = piece['name']
+
+    h2 Board
+    div class="board-editor__board" data-board-grid=true aria-label="Board editor grid"
+
+  p
+    button type="submit" = submit_label
+    |  
+    a href=cancel_path Cancel

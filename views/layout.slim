@@ -3,13 +3,17 @@ html
   head
     /- Base page metadata used by all views.
     meta charset="utf-8"
-    title Pieces
+    title Craz Chessickus
   body
-    /- Main navigation links for piece routes.
+    /- Main navigation links for piece and board routes.
     nav
       a href="/pieces" Pieces
+      |  | 
+      a href="/boards" Boards
     nav
       a href="/pieces/new" Create piece
+      |  | 
+      a href="/boards/new" Create board
 
     /- View outlet separator and page-specific content.
     hr

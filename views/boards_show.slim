@@ -1,0 +1,48 @@
+link rel="stylesheet" href="/board_editor.css"
+
+h1 = @board['name']
+
+- if @board['description'] && !@board['description'].empty?
+  p = @board['description']
+
+p
+  strong Size:
+  |  #{@board['board_size']}
+
+p
+  strong Visibility:
+  |  #{@board['is_public'].to_i == 1 ? 'public' : 'private'}
+
+/- Read-only rendering of both sides on one board.
+- size = @board['board_size'].to_i
+- size = 8 if size <= 0
+
+div class="board-editor board-editor--readonly"
+  div class="board-editor__board board-editor__board--static" style="grid-template-columns: repeat(#{size}, 2.8rem);"
+    - (0...size).each do |y|
+      - (0...size).each do |x|
+        - key = "#{x},#{y}"
+        - placement = @combined_placements_map[key]
+        - square_class = (x + y).even? ? 'is-light' : 'is-dark'
+        button type="button" class="board-editor__square #{square_class}" disabled=true
+          - if placement
+            - piece = @piece_by_id[placement['piece_id'].to_i]
+            - icon_path = piece ? piece['image_path'].to_s : ''
+            - icon_base_color = piece ? (piece['icon_base_color'] || 'black').to_s : 'black'
+            - placement_color = placement['color'].to_s
+            - invert_icon = (icon_base_color == 'black' && placement_color == 'white') || (icon_base_color == 'white' && placement_color == 'black')
+            - if icon_path && !icon_path.empty?
+              img class=("board-editor__piece-icon #{invert_icon ? 'is-inverted' : ''}") src=icon_path alt="#{piece ? piece['name'] : 'piece'} icon"
+            - else
+              span class=("board-editor__piece-label #{placement_color == 'white' ? 'is-white' : 'is-black'}")
+                = piece ? piece['name'][0, 1].upcase : '?'
+
+p
+  a href="/boards/#{@board['id']}/edit" Edit board
+
+p
+  form action="/boards/#{@board['id']}/delete" method="post"
+    button type="submit" Delete board
+
+p
+  a href="/boards" Back to boards

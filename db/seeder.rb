@@ -92,7 +92,7 @@ PIECE_SEEDS = [
   { id: 7, name: 'Joker', description: 'King-like movement with taunt behavior handled in game logic.', image_path: '/icons/pieces/joker_black.png', icon_base_color: 'black', power_ids: [] },
   { id: 8, name: 'Doomfist', description: 'Special capture behavior with stun handled in power logic.', image_path: '/icons/pieces/doomfist_black.png', icon_base_color: 'black', power_ids: [1] },
   { id: 9, name: 'Sniper', description: 'King-like movement, stationary ranged capture via power.', image_path: '/icons/pieces/sniper_black.png', icon_base_color: 'black', power_ids: [2] },
-  { id: 10, name: 'Paladin', description: 'Orthogonal one-step movement with protection behavior in game logic.', image_path: '/icons/pieces/paladin_black.png', icon_base_color: 'black', power_ids: [] },
+  { id: 10, name: 'Paladin', description: 'Orthogonal one-step movement with protection behavior in game logic.', image_path: '/icons/pieces/paladin_black.png', icon_base_color: 'black', power_ids: [8] },
   { id: 11, name: 'Assassin', description: 'Queen-like movement with jump-capture behavior via power.', image_path: '/icons/pieces/assassin_black.png', icon_base_color: 'black', power_ids: [4] },
   { id: 12, name: 'Berserker', description: 'Knight movement with chain-capture behavior via power.', image_path: '/icons/pieces/berserker_black.png', icon_base_color: 'black', power_ids: [7] },
   { id: 13, name: 'Catapult', description: 'King-like movement with launch behavior via power.', image_path: '/icons/pieces/catapult_black.png', icon_base_color: 'black', power_ids: [5] },
@@ -107,7 +107,8 @@ POWERS = [
   { id: 4, name: 'Assassin Jump', description: 'Jump capture behavior.' },
   { id: 5, name: 'Catapult Launch', description: 'Can launch an adjacent ally.' },
   { id: 6, name: 'Wraith Possession', description: 'Possession behavior.' },
-  { id: 7, name: 'Berserker Chain', description: 'Can chain captures.' }
+  { id: 7, name: 'Berserker Chain', description: 'Can chain captures.' },
+  { id: 8, name: 'Paladin Guard', description: 'Protects the piece directly behind it from being targeted'}
 ].freeze
 
 PIECE_MOVE_SEEDS = {
@@ -121,7 +122,11 @@ PIECE_MOVE_SEEDS = {
   5 => [{ movement_method_id: 4, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
   6 => [{ movement_method_id: 5, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
   7 => [{ movement_method_id: 3, ray_limit: 1, mode: 'move', color_scope: 'any', first_move_only: 0 }],
-  8 => [{ movement_method_id: 4, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }],
+  8 => [
+    { movement_method_id: 1, ray_limit: 3, mode: 'both', color_scope: 'any', first_move_only: 0 },
+    { movement_method_id: 2, ray_limit: 2, mode: 'both', color_scope: 'any', first_move_only: 0 },
+    { movement_method_id: 4, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }
+  ],
   9 => [{ movement_method_id: 3, ray_limit: 1, mode: 'move', color_scope: 'any', first_move_only: 0 }],
   10 => [{ movement_method_id: 1, ray_limit: 1, mode: 'both', color_scope: 'any', first_move_only: 0 }],
   11 => [
@@ -136,6 +141,59 @@ PIECE_MOVE_SEEDS = {
     { movement_method_id: 2, ray_limit: nil, mode: 'both', color_scope: 'any', first_move_only: 0 }
   ]
 }.freeze
+
+BOARD_SEEDS = [
+  {
+    id: 1,
+    name: 'Default Chess',
+    description: 'Classic white-side starting setup on the bottom half.',
+    board_size: 8,
+    is_public: 1,
+    placements: [
+      { x: 0, y: 7, piece_id: 3, color: 'white' },
+      { x: 1, y: 7, piece_id: 5, color: 'white' },
+      { x: 2, y: 7, piece_id: 4, color: 'white' },
+      { x: 3, y: 7, piece_id: 2, color: 'white' },
+      { x: 4, y: 7, piece_id: 1, color: 'white' },
+      { x: 5, y: 7, piece_id: 4, color: 'white' },
+      { x: 6, y: 7, piece_id: 5, color: 'white' },
+      { x: 7, y: 7, piece_id: 3, color: 'white' },
+      { x: 0, y: 6, piece_id: 6, color: 'white' },
+      { x: 1, y: 6, piece_id: 6, color: 'white' },
+      { x: 2, y: 6, piece_id: 6, color: 'white' },
+      { x: 3, y: 6, piece_id: 6, color: 'white' },
+      { x: 4, y: 6, piece_id: 6, color: 'white' },
+      { x: 5, y: 6, piece_id: 6, color: 'white' },
+      { x: 6, y: 6, piece_id: 6, color: 'white' },
+      { x: 7, y: 6, piece_id: 6, color: 'white' }
+    ]
+  },
+  {
+    id: 2,
+    name: 'Custom Powers',
+    description: 'Bottom-half white-side setup using custom power pieces.',
+    board_size: 8,
+    is_public: 1,
+    placements: [
+      { x: 0, y: 7, piece_id: 8, color: 'white' },
+      { x: 1, y: 7, piece_id: 9, color: 'white' },
+      { x: 2, y: 7, piece_id: 10, color: 'white' },
+      { x: 3, y: 7, piece_id: 11, color: 'white' },
+      { x: 4, y: 7, piece_id: 15, color: 'white' },
+      { x: 5, y: 7, piece_id: 14, color: 'white' },
+      { x: 6, y: 7, piece_id: 12, color: 'white' },
+      { x: 7, y: 7, piece_id: 13, color: 'white' },
+      { x: 0, y: 6, piece_id: 7, color: 'white' },
+      { x: 1, y: 6, piece_id: 8, color: 'white' },
+      { x: 2, y: 6, piece_id: 9, color: 'white' },
+      { x: 3, y: 6, piece_id: 10, color: 'white' },
+      { x: 4, y: 6, piece_id: 11, color: 'white' },
+      { x: 5, y: 6, piece_id: 12, color: 'white' },
+      { x: 6, y: 6, piece_id: 14, color: 'white' },
+      { x: 7, y: 6, piece_id: 15, color: 'white' }
+    ]
+  }
+].freeze
 
 db = SQLite3::Database.new(DB_PATH)
 db.execute('PRAGMA foreign_keys = ON')
@@ -154,12 +212,15 @@ def seed!(db)
   populate_pieces(db)
   puts 'Populating piece_moves...'
   populate_piece_moves(db)
+  puts 'Populating boards...'
+  populate_boards(db)
   puts 'Writing piece_movement.json...'
   write_movement_json
   puts 'Done seeding the database!'
 end
 
 def drop_tables(db)
+  db.execute('DROP TABLE IF EXISTS boards')
   db.execute('DROP TABLE IF EXISTS piece_powers')
   db.execute('DROP TABLE IF EXISTS powers')
   db.execute('DROP TABLE IF EXISTS piece_moves')
@@ -223,6 +284,21 @@ def create_tables(db)
       updated_at DATETIME NOT NULL,
       FOREIGN KEY (piece_id) REFERENCES pieces(id) ON DELETE CASCADE,
       FOREIGN KEY (movement_method_id) REFERENCES movement_methods(id) ON DELETE SET NULL
+    )
+  SQL
+
+  db.execute <<~SQL
+    CREATE TABLE IF NOT EXISTS boards (
+      id INTEGER PRIMARY KEY,
+      owner_id INTEGER NOT NULL DEFAULT 0,
+      name TEXT NOT NULL,
+      description TEXT,
+      board_size INTEGER NOT NULL DEFAULT 8,
+      placements_json TEXT NOT NULL DEFAULT '[]',
+      is_public INTEGER NOT NULL DEFAULT 0 CHECK (is_public IN (0, 1)),
+      deleted_at DATETIME,
+      created_at DATETIME NOT NULL,
+      updated_at DATETIME NOT NULL
     )
   SQL
 end
@@ -299,6 +375,28 @@ def populate_piece_moves(db)
         ]
       )
     end
+  end
+end
+
+def populate_boards(db)
+  now = Time.now.utc.iso8601
+
+  BOARD_SEEDS.each do |board|
+    db.execute(
+      'INSERT INTO boards (id, owner_id, name, description, board_size, placements_json, is_public, deleted_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [
+        board[:id],
+        0,
+        board[:name],
+        board[:description],
+        board[:board_size],
+        JSON.generate(board[:placements]),
+        board[:is_public],
+        nil,
+        now,
+        now
+      ]
+    )
   end
 end
 
