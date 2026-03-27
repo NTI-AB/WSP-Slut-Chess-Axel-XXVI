@@ -42,6 +42,9 @@ end
 # Ensures older DB files get the icon base color column before app logic runs.
 def ensure_pieces_icon_base_color_column!
   conn = SQLite3::Database.new(DB_PATH)
+  table_exists = conn.get_first_value("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'pieces' LIMIT 1")
+  return unless table_exists
+
   columns = conn.execute('PRAGMA table_info(pieces)').map { |row| row[1] }
   return if columns.include?('icon_base_color')
 
@@ -76,6 +79,70 @@ ensure
 end
 
 ensure_boards_table!
+
+# Ensures board-piece relationship table exists for board dependency tracking.
+def ensure_board_piece_links_table!
+  conn = SQLite3::Database.new(DB_PATH)
+  conn.execute <<~SQL
+    CREATE TABLE IF NOT EXISTS board_piece_links (
+      id INTEGER PRIMARY KEY,
+      board_id INTEGER NOT NULL,
+      piece_id INTEGER NOT NULL,
+      created_at DATETIME NOT NULL,
+      UNIQUE(board_id, piece_id),
+      FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE,
+      FOREIGN KEY (piece_id) REFERENCES pieces(id) ON DELETE CASCADE
+    )
+  SQL
+ensure
+  conn&.close
+end
+
+# Rebuilds board-piece relationship rows from boards placements JSON.
+def rebuild_board_piece_links_from_boards!
+  conn = SQLite3::Database.new(DB_PATH)
+  boards_exists = conn.get_first_value("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'boards' LIMIT 1")
+  links_exists = conn.get_first_value("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'board_piece_links' LIMIT 1")
+  return unless boards_exists && links_exists
+
+  rows = conn.execute('SELECT id, placements_json FROM boards WHERE deleted_at IS NULL')
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+  conn.transaction
+  conn.execute('DELETE FROM board_piece_links')
+  rows.each do |board_id, placements_raw|
+    parsed = begin
+      value = JSON.parse(placements_raw.to_s)
+      value.is_a?(Array) ? value : []
+    rescue JSON::ParserError
+      []
+    end
+
+    piece_ids = parsed.filter_map do |entry|
+      next unless entry.is_a?(Hash)
+      id = entry['piece_id']
+      next if id.nil?
+      number = id.to_i
+      next unless number.positive?
+      number
+    end.uniq
+
+    piece_ids.each do |piece_id|
+      conn.execute(
+        'INSERT OR IGNORE INTO board_piece_links (board_id, piece_id, created_at) VALUES (?, ?, ?)',
+        [board_id.to_i, piece_id, now]
+      )
+    end
+  end
+  conn.commit
+rescue SQLite3::SQLException
+  conn&.rollback
+ensure
+  conn&.close
+end
+
+ensure_board_piece_links_table!
+rebuild_board_piece_links_from_boards!
 
 helpers do
   # Returns currently signed-in account row (or nil).
@@ -116,7 +183,12 @@ helpers do
     account ? account['id'].to_i : 0
   end
 
-  # Returns owner id used by premade piece library.
+  # Reads the list-page toggle for including other users' public content.
+  def show_public_enabled_param?(value)
+    value.to_s == '1'
+  end
+
+  # Returns owner id used by premade default library.
   def default_premade_piece_owner_id
     DEFAULT_PREMADE_PIECE_OWNER_ID
   end
@@ -130,20 +202,24 @@ helpers do
     end
   end
 
-  # Finds one visible piece by id (defaults + current owner's pieces).
+  # Finds one visible piece by id (default owner, own, or public).
   def piece_visible_by_id_for_owner(id, owner_id)
     default_owner_id = default_premade_piece_owner_id
-    if owner_id.zero?
-      db.get_first_row(
-        'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND source_piece_id IS NULL AND owner_id = ?',
-        [id, default_owner_id]
-      )
-    else
-      db.get_first_row(
-        'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND source_piece_id IS NULL AND owner_id IN (?, ?)',
-        [id, default_owner_id, owner_id]
-      )
-    end
+    db.get_first_row(
+      <<~SQL,
+        SELECT *
+        FROM pieces
+        WHERE id = ?
+          AND deleted_at IS NULL
+          AND source_piece_id IS NULL
+          AND (
+            owner_id = ?
+            OR (? > 0 AND owner_id = ?)
+            OR is_public = 1
+          )
+      SQL
+      [id, default_owner_id, owner_id, owner_id]
+    )
   end
 
   # Finds one piece by id owned by current owner.
@@ -154,120 +230,130 @@ helpers do
     )
   end
 
-  # Lists pieces visible for one owner (defaults + own).
-  def pieces_for_owner(owner_id)
+  # Lists pieces for index based on default-owner/own visibility and optional public toggle.
+  def pieces_for_owner(owner_id, show_public: false)
     default_owner_id = default_premade_piece_owner_id
-    if owner_id.zero?
-      db.execute(
-        <<~SQL,
-          SELECT id, name, description, image_path, icon_base_color, created_at, owner_id
-          FROM pieces
-          WHERE deleted_at IS NULL
-            AND source_piece_id IS NULL
-            AND owner_id = ?
-          ORDER BY id
-        SQL
-        [default_owner_id]
-      )
-    else
-      db.execute(
-        <<~SQL,
-          SELECT id, name, description, image_path, icon_base_color, created_at, owner_id
-          FROM pieces
-          WHERE deleted_at IS NULL
-            AND source_piece_id IS NULL
-            AND owner_id IN (?, ?)
-          ORDER BY id
-        SQL
-        [default_owner_id, owner_id]
-      )
-    end
+    show_public_int = show_public ? 1 : 0
+    db.execute(
+      <<~SQL,
+        SELECT id, name, description, image_path, icon_base_color, created_at, owner_id, is_public
+        FROM pieces
+        WHERE deleted_at IS NULL
+          AND source_piece_id IS NULL
+          AND (
+            owner_id = ?
+            OR (? > 0 AND owner_id = ?)
+            OR (? = 1 AND is_public = 1 AND owner_id != ? AND owner_id != ?)
+          )
+        ORDER BY id
+      SQL
+      [default_owner_id, owner_id, owner_id, show_public_int, default_owner_id, owner_id]
+    )
   end
 
-  # Lists piece rows available for board editing (defaults + current owner pieces).
+  # Lists piece rows available for board editing (default-owner + current owner pieces).
   def available_pieces_for_owner(owner_id)
     default_owner_id = default_premade_piece_owner_id
-    if owner_id.zero?
+    db.execute(
+      <<~SQL,
+        SELECT id, name, image_path, icon_base_color
+        FROM pieces
+        WHERE deleted_at IS NULL
+          AND source_piece_id IS NULL
+          AND (
+            owner_id = ?
+            OR (? > 0 AND owner_id = ?)
+          )
+        ORDER BY LOWER(name), id
+      SQL
+      [default_owner_id, owner_id, owner_id]
+    )
+  end
+
+  # Fetches piece rows by ids for board rendering.
+  def pieces_by_ids(piece_ids)
+    return [] if piece_ids.empty?
+
+    placeholders = (['?'] * piece_ids.length).join(',')
+    db.execute(
+      "SELECT id, name, image_path, icon_base_color FROM pieces WHERE id IN (#{placeholders}) AND deleted_at IS NULL",
+      piece_ids
+    )
+  end
+
+  # Extracts unique piece ids from normalized board placements.
+  def piece_ids_from_placements(placements)
+    placements.filter_map do |entry|
+      next unless entry.is_a?(Hash)
+      raw_id = entry['piece_id'] || entry[:piece_id]
+      next if raw_id.nil?
+      id = raw_id.to_i
+      next unless id.positive?
+      id
+    end.uniq
+  end
+
+  # Replaces board-piece links with current placement-derived piece ids.
+  def sync_board_piece_links!(board_id, placements)
+    ids = piece_ids_from_placements(placements)
+    now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+    db.execute('DELETE FROM board_piece_links WHERE board_id = ?', [board_id])
+    ids.each do |piece_id|
       db.execute(
-        <<~SQL,
-          SELECT id, name, image_path, icon_base_color
-          FROM pieces
-          WHERE deleted_at IS NULL
-            AND source_piece_id IS NULL
-            AND owner_id = ?
-          ORDER BY LOWER(name), id
-        SQL
-        [default_owner_id]
-      )
-    else
-      db.execute(
-        <<~SQL,
-          SELECT id, name, image_path, icon_base_color
-          FROM pieces
-          WHERE deleted_at IS NULL
-            AND source_piece_id IS NULL
-            AND owner_id IN (?, ?)
-          ORDER BY LOWER(name), id
-        SQL
-        [default_owner_id, owner_id]
+        'INSERT OR IGNORE INTO board_piece_links (board_id, piece_id, created_at) VALUES (?, ?, ?)',
+        [board_id, piece_id, now]
       )
     end
   end
 
-  # Returns active boards for one owner.
-  def boards_for_owner(owner_id)
+  # Removes all board-piece links for one board.
+  def delete_board_piece_links!(board_id)
+    db.execute('DELETE FROM board_piece_links WHERE board_id = ?', [board_id])
+  end
+
+  # Checks if at least one board still references this piece.
+  def piece_linked_to_any_board?(piece_id)
+    value = db.get_first_value('SELECT 1 FROM board_piece_links WHERE piece_id = ? LIMIT 1', [piece_id])
+    !value.nil?
+  end
+
+  # Returns board rows for index based on default-owner/own visibility and optional public toggle.
+  def boards_for_owner(owner_id, show_public: false)
     default_owner_id = default_premade_piece_owner_id
-    if owner_id.zero?
-      db.execute(
-        <<~SQL,
-          SELECT id, name, description, board_size, is_public, created_at, updated_at, owner_id
-          FROM boards
-          WHERE deleted_at IS NULL
-            AND owner_id = ?
-          ORDER BY id DESC
-        SQL
-        [default_owner_id]
-      )
-    else
-      db.execute(
-        <<~SQL,
-          SELECT id, name, description, board_size, is_public, created_at, updated_at, owner_id
-          FROM boards
-          WHERE deleted_at IS NULL
-            AND owner_id IN (?, ?)
-          ORDER BY id DESC
-        SQL
-        [default_owner_id, owner_id]
-      )
-    end
+    show_public_int = show_public ? 1 : 0
+    db.execute(
+      <<~SQL,
+        SELECT id, name, description, board_size, is_public, created_at, updated_at, owner_id
+        FROM boards
+        WHERE deleted_at IS NULL
+          AND (
+            owner_id = ?
+            OR (? > 0 AND owner_id = ?)
+            OR (? = 1 AND is_public = 1 AND owner_id != ? AND owner_id != ?)
+          )
+        ORDER BY id DESC
+      SQL
+      [default_owner_id, owner_id, owner_id, show_public_int, default_owner_id, owner_id]
+    )
   end
 
-  # Finds one board visible to owner (default + own).
+  # Finds one board visible to owner (default owner, own, or public).
   def board_visible_by_id_for_owner(id, owner_id)
     default_owner_id = default_premade_piece_owner_id
-    if owner_id.zero?
-      db.get_first_row(
-        <<~SQL,
-          SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
-          FROM boards
-          WHERE id = ?
-            AND deleted_at IS NULL
-            AND owner_id = ?
-        SQL
-        [id, default_owner_id]
-      )
-    else
-      db.get_first_row(
-        <<~SQL,
-          SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
-          FROM boards
-          WHERE id = ?
-            AND deleted_at IS NULL
-            AND owner_id IN (?, ?)
-        SQL
-        [id, default_owner_id, owner_id]
-      )
-    end
+    db.get_first_row(
+      <<~SQL,
+        SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
+        FROM boards
+        WHERE id = ?
+          AND deleted_at IS NULL
+          AND (
+            owner_id = ?
+            OR (? > 0 AND owner_id = ?)
+            OR is_public = 1
+          )
+      SQL
+      [id, default_owner_id, owner_id, owner_id]
+    )
   end
 
   # Finds one board by id owned by current owner.
@@ -658,7 +744,8 @@ end
 # Lists active boards for current owner.
 get '/boards' do
   owner_id = current_owner_id
-  @boards = boards_for_owner(owner_id)
+  @show_public = show_public_enabled_param?(params[:show_public])
+  @boards = boards_for_owner(owner_id, show_public: @show_public)
   slim :boards_index
 end
 
@@ -700,7 +787,9 @@ post '/boards' do
   halt 422, errors.join(' ') unless errors.empty?
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  board_id = nil
 
+  db.transaction
   db.execute(
     'INSERT INTO boards (owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
     [
@@ -714,9 +803,14 @@ post '/boards' do
       now
     ]
   )
-
   board_id = db.last_insert_row_id
+  sync_board_piece_links!(board_id, placements)
+  db.commit
+
   redirect "/boards/#{board_id}"
+rescue SQLite3::SQLException => e
+  db.rollback
+  halt 500, "Could not create board: #{e.message}"
 end
 
 # Shows one board in read-only mode.
@@ -728,9 +822,9 @@ get '/boards/:id' do
   @board = board_visible_by_id_for_owner(id, owner_id)
   halt 404, 'Board not found' unless @board
 
-  @available_pieces = available_pieces_for_owner(owner_id)
-  @piece_by_id = @available_pieces.each_with_object({}) { |row, memo| memo[row['id'].to_i] = row }
   @placements = parse_placements_for_view(@board['placements_json'])
+  piece_ids = @placements.map { |placement| placement['piece_id'].to_i }.uniq
+  @piece_by_id = pieces_by_ids(piece_ids).each_with_object({}) { |row, memo| memo[row['id'].to_i] = row }
   @flipped_placements = flipped_placements_for_view(@placements, @board['board_size'])
   @combined_placements_map = placements_map_for_view(@placements + @flipped_placements)
 
@@ -779,6 +873,7 @@ post '/boards/:id/update' do
   halt 422, errors.join(' ') unless errors.empty?
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  db.transaction
   db.execute(
     'UPDATE boards SET name = ?, description = ?, board_size = ?, placements_json = ?, is_public = ?, updated_at = ? WHERE id = ?',
     [
@@ -791,8 +886,13 @@ post '/boards/:id/update' do
       id
     ]
   )
+  sync_board_piece_links!(id, placements)
+  db.commit
 
   redirect "/boards/#{id}"
+rescue SQLite3::SQLException => e
+  db.rollback
+  halt 500, "Could not update board: #{e.message}"
 end
 
 # Soft deletes one board.
@@ -806,13 +906,21 @@ post '/boards/:id/delete' do
   halt 404, 'Board not found' unless board
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  db.transaction
   db.execute('UPDATE boards SET deleted_at = ?, updated_at = ? WHERE id = ?', [now, now, id])
+  delete_board_piece_links!(id)
+  db.commit
   redirect '/boards'
+rescue SQLite3::SQLException => e
+  db.rollback
+  halt 500, "Could not delete board: #{e.message}"
 end
 
 # Lists active pieces.
 get '/pieces' do
-  @pieces = pieces_for_owner(current_owner_id)
+  owner_id = current_owner_id
+  @show_public = show_public_enabled_param?(params[:show_public])
+  @pieces = pieces_for_owner(owner_id, show_public: @show_public)
 
   slim :index
 end
@@ -834,6 +942,7 @@ post '/pieces' do
   icon_upload = params[:icon_file]
   image_path = nil
   icon_base_color = normalized_icon_base_color(params[:icon_base_color])
+  is_public = params[:is_public].to_s == '1' ? 1 : 0
   method_ids = Array(params[:method_ids]).map(&:to_i).uniq
   selected_power_ids = Array(params[:power_ids]).map(&:to_i).uniq
 
@@ -855,7 +964,7 @@ post '/pieces' do
 
   db.transaction
   db.execute(
-    'INSERT INTO pieces (owner_id, source_piece_id, name, description, image_path, icon_base_color, power_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT INTO pieces (owner_id, source_piece_id, name, description, image_path, icon_base_color, is_public, power_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [
       owner_id,
       nil,
@@ -863,6 +972,7 @@ post '/pieces' do
       (description.empty? ? nil : description),
       image_path,
       icon_base_color,
+      is_public,
       JSON.generate(filtered_power_ids),
       now,
       now
@@ -975,6 +1085,7 @@ post '/pieces/:id/update' do
   icon_upload = params[:icon_file]
   image_path = piece['image_path']
   icon_base_color = normalized_icon_base_color(params[:icon_base_color])
+  is_public = params[:is_public].to_s == '1' ? 1 : 0
   method_ids = Array(params[:method_ids]).map(&:to_i).uniq
   selected_power_ids = Array(params[:power_ids]).map(&:to_i).uniq
 
@@ -995,8 +1106,8 @@ post '/pieces/:id/update' do
 
   db.transaction
   db.execute(
-    'UPDATE pieces SET name = ?, description = ?, image_path = ?, icon_base_color = ?, power_ids = ?, updated_at = ? WHERE id = ?',
-    [name, (description.empty? ? nil : description), image_path, icon_base_color, JSON.generate(filtered_power_ids), now, id]
+    'UPDATE pieces SET name = ?, description = ?, image_path = ?, icon_base_color = ?, is_public = ?, power_ids = ?, updated_at = ? WHERE id = ?',
+    [name, (description.empty? ? nil : description), image_path, icon_base_color, is_public, JSON.generate(filtered_power_ids), now, id]
   )
 
   db.execute('DELETE FROM piece_moves WHERE piece_id = ?', [id])
@@ -1056,7 +1167,14 @@ post '/pieces/:id/delete' do
   piece = piece_owned_by_id_for_owner(id, owner_id)
   halt 404, 'Piece not found' unless piece
 
-  db.execute('DELETE FROM pieces WHERE id = ?', [id])
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+  if piece_linked_to_any_board?(id)
+    db.execute('UPDATE pieces SET owner_id = -1, is_public = 0, updated_at = ? WHERE id = ?', [now, id])
+  else
+    db.execute('DELETE FROM pieces WHERE id = ?', [id])
+  end
+
   redirect '/pieces'
 end
 

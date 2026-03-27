@@ -1,23 +1,32 @@
 h1 Boards
 
-/- Board list with quick links to view and edit.
+/- Board list with quick links, visibility badges, and public toggle.
 - owner_id = current_owner_id
 - default_owner_id = default_premade_piece_owner_id
+- show_public = @show_public == true
+- query_suffix = show_public ? '?show_public=1' : ''
+
+p
+  - if show_public
+    a href="/boards" Hide other users' public boards
+  - else
+    a href="/boards?show_public=1" Show other users' public boards
+
 - if @boards.empty?
   p No boards yet.
 - else
   ul
     - @boards.each do |board|
+      - badge = board['owner_id'].to_i == default_owner_id ? 'default' : (board['is_public'].to_i == 1 ? 'public' : 'private')
       li
-        a href="/boards/#{board['id']}" = "#{board['name']} (##{board['id']})"
+        a href="/boards/#{board['id']}#{query_suffix}" = "#{board['name']} (##{board['id']})"
+        |  - #{badge}
         - if board['owner_id'].to_i == owner_id
           |  - 
-          a href="/boards/#{board['id']}/edit" Edit
-        - elsif board['owner_id'].to_i == default_owner_id
-          |  - default
+          a href="/boards/#{board['id']}/edit#{query_suffix}" Edit
         |  - size: #{board['board_size']}
         - if board['description'] && !board['description'].empty?
           |  - #{board['description']}
 
 p
-  a href="/boards/new" Create new board
+  a href="/boards/new#{query_suffix}" Create new board

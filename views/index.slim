@@ -1,19 +1,28 @@
 h1 Pieces
 
-/- Piece listing with optional icon, edit link, and short description.
+/- Piece listing with optional icon, visibility badges, and public toggle.
 - owner_id = current_owner_id
 - default_owner_id = default_premade_piece_owner_id
+- show_public = @show_public == true
+- query_suffix = show_public ? '?show_public=1' : ''
+
+p
+  - if show_public
+    a href="/pieces" Hide other users' public pieces
+  - else
+    a href="/pieces?show_public=1" Show other users' public pieces
+
 ul
   - @pieces.each do |piece|
+    - badge = piece['owner_id'].to_i == default_owner_id ? 'default' : (piece['is_public'].to_i == 1 ? 'public' : 'private')
     li
       - if piece['image_path'] && !piece['image_path'].empty?
         img src=piece['image_path'] alt="#{piece['name']} icon" style="width: 1.5rem; height: 1.5rem; object-fit: fill; vertical-align: middle; border: 1px solid #bbb;"
         |  
-      a href="/pieces/#{piece['id']}" = "#{piece['name']} (##{piece['id']})"
+      a href="/pieces/#{piece['id']}#{query_suffix}" = "#{piece['name']} (##{piece['id']})"
+      |  - #{badge}
       - if piece['owner_id'].to_i == owner_id
         |  - 
-        a href="/pieces/#{piece['id']}/edit" Edit
-      - elsif piece['owner_id'].to_i == default_owner_id
-        |  - default
+        a href="/pieces/#{piece['id']}/edit#{query_suffix}" Edit
       - if piece['description'] && !piece['description'].empty?
         |  - #{piece['description']}

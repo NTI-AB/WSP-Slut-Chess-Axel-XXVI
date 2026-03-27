@@ -228,6 +228,8 @@ def seed!(db)
   populate_piece_moves(db)
   puts 'Populating boards...'
   populate_boards(db)
+  puts 'Populating board-piece links...'
+  populate_board_piece_links(db)
   puts 'Writing piece_movement.json...'
   write_movement_json
   puts 'Done seeding the database!'
@@ -235,6 +237,7 @@ end
 
 def drop_tables(db)
   db.execute('DROP TABLE IF EXISTS accounts')
+  db.execute('DROP TABLE IF EXISTS board_piece_links')
   db.execute('DROP TABLE IF EXISTS boards')
   db.execute('DROP TABLE IF EXISTS piece_powers')
   db.execute('DROP TABLE IF EXISTS powers')
@@ -325,6 +328,18 @@ def create_tables(db)
       deleted_at DATETIME,
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL
+    )
+  SQL
+
+  db.execute <<~SQL
+    CREATE TABLE IF NOT EXISTS board_piece_links (
+      id INTEGER PRIMARY KEY,
+      board_id INTEGER NOT NULL,
+      piece_id INTEGER NOT NULL,
+      created_at DATETIME NOT NULL,
+      UNIQUE(board_id, piece_id),
+      FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE,
+      FOREIGN KEY (piece_id) REFERENCES pieces(id) ON DELETE CASCADE
     )
   SQL
 end
@@ -439,6 +454,27 @@ def populate_boards(db)
         now
       ]
     )
+  end
+end
+
+def populate_board_piece_links(db)
+  now = Time.now.utc.iso8601
+
+  BOARD_SEEDS.each do |board|
+    piece_ids = board[:placements].filter_map do |placement|
+      id = placement[:piece_id]
+      next if id.nil?
+      number = id.to_i
+      next unless number.positive?
+      number
+    end.uniq
+
+    piece_ids.each do |piece_id|
+      db.execute(
+        'INSERT OR IGNORE INTO board_piece_links (board_id, piece_id, created_at) VALUES (?, ?, ?)',
+        [board[:id], piece_id, now]
+      )
+    end
   end
 end
 

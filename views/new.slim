@@ -14,6 +14,11 @@ form action="/pieces" method="post" enctype="multipart/form-data"
     textarea#description name="description" rows="4" cols="50"
 
   p
+    label
+      input type="checkbox" name="is_public" value="1"
+      |  Public piece
+
+  p
     label for="icon_file" Upload icon
     br
     input#icon_file type="file" name="icon_file" accept=".png,.jpg,.jpeg,.webp,.gif,.svg,image/*"
