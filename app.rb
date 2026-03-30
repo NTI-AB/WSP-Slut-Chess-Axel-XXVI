@@ -13,6 +13,8 @@ ICON_UPLOAD_DIR = File.join('public', 'icons', 'pieces', 'uploads')
 SESSION_SECRET_MIN_LENGTH = 64
 DEFAULT_PREMADE_PIECE_OWNER_ID = 1
 
+require_relative 'model'
+
 session_secret = ENV['SESSION_SECRET']
 if session_secret.nil? || session_secret.bytesize < SESSION_SECRET_MIN_LENGTH
   warn "SESSION_SECRET missing/too short (#{session_secret&.bytesize || 0}); using temporary secret."
@@ -22,143 +24,10 @@ end
 enable :sessions
 set :session_secret, session_secret
 
-# Ensures accounts table exists for login/register.
-def ensure_accounts_table!
-  conn = SQLite3::Database.new(DB_PATH)
-  conn.execute <<~SQL
-    CREATE TABLE IF NOT EXISTS accounts (
-      id INTEGER PRIMARY KEY,
-      username TEXT NOT NULL,
-      email TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      created_at DATETIME NOT NULL,
-      updated_at DATETIME NOT NULL
-    )
-  SQL
-ensure
-  conn&.close
-end
-
-# Ensures older DB files get the icon base color column before app logic runs.
-def ensure_pieces_icon_base_color_column!
-  conn = SQLite3::Database.new(DB_PATH)
-  table_exists = conn.get_first_value("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'pieces' LIMIT 1")
-  return unless table_exists
-
-  columns = conn.execute('PRAGMA table_info(pieces)').map { |row| row[1] }
-  return if columns.include?('icon_base_color')
-
-  conn.execute("ALTER TABLE pieces ADD COLUMN icon_base_color TEXT NOT NULL DEFAULT 'black'")
-  conn.execute("UPDATE pieces SET icon_base_color = 'black' WHERE icon_base_color IS NULL OR icon_base_color = ''")
-ensure
-  conn&.close
-end
-
-ensure_accounts_table!
-ensure_pieces_icon_base_color_column!
-
-# Ensures boards table exists for board CRUD.
-def ensure_boards_table!
-  conn = SQLite3::Database.new(DB_PATH)
-  conn.execute <<~SQL
-    CREATE TABLE IF NOT EXISTS boards (
-      id INTEGER PRIMARY KEY,
-      owner_id INTEGER NOT NULL DEFAULT 0,
-      name TEXT NOT NULL,
-      description TEXT,
-      board_size INTEGER NOT NULL DEFAULT 8,
-      placements_json TEXT NOT NULL DEFAULT '[]',
-      is_public INTEGER NOT NULL DEFAULT 0 CHECK (is_public IN (0, 1)),
-      deleted_at DATETIME,
-      created_at DATETIME NOT NULL,
-      updated_at DATETIME NOT NULL
-    )
-  SQL
-ensure
-  conn&.close
-end
-
-ensure_boards_table!
-
-# Ensures board-piece relationship table exists for board dependency tracking.
-def ensure_board_piece_links_table!
-  conn = SQLite3::Database.new(DB_PATH)
-  conn.execute <<~SQL
-    CREATE TABLE IF NOT EXISTS board_piece_links (
-      id INTEGER PRIMARY KEY,
-      board_id INTEGER NOT NULL,
-      piece_id INTEGER NOT NULL,
-      created_at DATETIME NOT NULL,
-      UNIQUE(board_id, piece_id),
-      FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE,
-      FOREIGN KEY (piece_id) REFERENCES pieces(id) ON DELETE CASCADE
-    )
-  SQL
-ensure
-  conn&.close
-end
-
-# Rebuilds board-piece relationship rows from boards placements JSON.
-def rebuild_board_piece_links_from_boards!
-  conn = SQLite3::Database.new(DB_PATH)
-  boards_exists = conn.get_first_value("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'boards' LIMIT 1")
-  links_exists = conn.get_first_value("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'board_piece_links' LIMIT 1")
-  return unless boards_exists && links_exists
-
-  rows = conn.execute('SELECT id, placements_json FROM boards WHERE deleted_at IS NULL')
-  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-  conn.transaction
-  conn.execute('DELETE FROM board_piece_links')
-  rows.each do |board_id, placements_raw|
-    parsed = begin
-      value = JSON.parse(placements_raw.to_s)
-      value.is_a?(Array) ? value : []
-    rescue JSON::ParserError
-      []
-    end
-
-    piece_ids = parsed.filter_map do |entry|
-      next unless entry.is_a?(Hash)
-      id = entry['piece_id']
-      next if id.nil?
-      number = id.to_i
-      next unless number.positive?
-      number
-    end.uniq
-
-    piece_ids.each do |piece_id|
-      conn.execute(
-        'INSERT OR IGNORE INTO board_piece_links (board_id, piece_id, created_at) VALUES (?, ?, ?)',
-        [board_id.to_i, piece_id, now]
-      )
-    end
-  end
-  conn.commit
-rescue SQLite3::SQLException
-  conn&.rollback
-ensure
-  conn&.close
-end
-
-ensure_board_piece_links_table!
-rebuild_board_piece_links_from_boards!
+SchemaModel.setup_database!(db_path: DB_PATH)
 
 helpers do
-  # Returns currently signed-in account row (or nil).
-  def current_account
-    return @current_account if defined?(@current_account_loaded) && @current_account_loaded
-    @current_account_loaded = true
-    @current_account = nil
-    return nil unless session[:account_id]
-
-    @current_account = db.get_first_row(
-      'SELECT id, username, email FROM accounts WHERE id = ?',
-      [session[:account_id].to_i]
-    )
-  rescue SQLite3::SQLException
-    @current_account = nil
-  end
+  include QueryModel
 
   # Stores one flash message in session.
   def set_flash(type, message)
@@ -202,204 +71,11 @@ helpers do
     end
   end
 
-  # Finds one visible piece by id (default owner, own, or public).
-  def piece_visible_by_id_for_owner(id, owner_id)
-    default_owner_id = default_premade_piece_owner_id
-    db.get_first_row(
-      <<~SQL,
-        SELECT *
-        FROM pieces
-        WHERE id = ?
-          AND deleted_at IS NULL
-          AND source_piece_id IS NULL
-          AND (
-            owner_id = ?
-            OR (? > 0 AND owner_id = ?)
-            OR is_public = 1
-          )
-      SQL
-      [id, default_owner_id, owner_id, owner_id]
-    )
-  end
-
-  # Finds one piece by id owned by current owner.
-  def piece_owned_by_id_for_owner(id, owner_id)
-    db.get_first_row(
-      'SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND source_piece_id IS NULL AND owner_id = ?',
-      [id, owner_id]
-    )
-  end
-
-  # Lists pieces for index based on default-owner/own visibility and optional public toggle.
-  def pieces_for_owner(owner_id, show_public: false)
-    default_owner_id = default_premade_piece_owner_id
-    show_public_int = show_public ? 1 : 0
-    db.execute(
-      <<~SQL,
-        SELECT id, name, description, image_path, icon_base_color, created_at, owner_id, is_public
-        FROM pieces
-        WHERE deleted_at IS NULL
-          AND source_piece_id IS NULL
-          AND (
-            owner_id = ?
-            OR (? > 0 AND owner_id = ?)
-            OR (? = 1 AND is_public = 1 AND owner_id != ? AND owner_id != ?)
-          )
-        ORDER BY id
-      SQL
-      [default_owner_id, owner_id, owner_id, show_public_int, default_owner_id, owner_id]
-    )
-  end
-
-  # Lists piece rows available for board editing (default-owner + current owner pieces).
-  def available_pieces_for_owner(owner_id)
-    default_owner_id = default_premade_piece_owner_id
-    db.execute(
-      <<~SQL,
-        SELECT id, name, image_path, icon_base_color
-        FROM pieces
-        WHERE deleted_at IS NULL
-          AND source_piece_id IS NULL
-          AND (
-            owner_id = ?
-            OR (? > 0 AND owner_id = ?)
-          )
-        ORDER BY LOWER(name), id
-      SQL
-      [default_owner_id, owner_id, owner_id]
-    )
-  end
-
-  # Fetches piece rows by ids for board rendering.
-  def pieces_by_ids(piece_ids)
-    return [] if piece_ids.empty?
-
-    placeholders = (['?'] * piece_ids.length).join(',')
-    db.execute(
-      "SELECT id, name, image_path, icon_base_color FROM pieces WHERE id IN (#{placeholders}) AND deleted_at IS NULL",
-      piece_ids
-    )
-  end
-
-  # Extracts unique piece ids from normalized board placements.
-  def piece_ids_from_placements(placements)
-    placements.filter_map do |entry|
-      next unless entry.is_a?(Hash)
-      raw_id = entry['piece_id'] || entry[:piece_id]
-      next if raw_id.nil?
-      id = raw_id.to_i
-      next unless id.positive?
-      id
-    end.uniq
-  end
-
-  # Replaces board-piece links with current placement-derived piece ids.
-  def sync_board_piece_links!(board_id, placements)
-    ids = piece_ids_from_placements(placements)
-    now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-    db.execute('DELETE FROM board_piece_links WHERE board_id = ?', [board_id])
-    ids.each do |piece_id|
-      db.execute(
-        'INSERT OR IGNORE INTO board_piece_links (board_id, piece_id, created_at) VALUES (?, ?, ?)',
-        [board_id, piece_id, now]
-      )
-    end
-  end
-
-  # Removes all board-piece links for one board.
-  def delete_board_piece_links!(board_id)
-    db.execute('DELETE FROM board_piece_links WHERE board_id = ?', [board_id])
-  end
-
-  # Checks if at least one board still references this piece.
-  def piece_linked_to_any_board?(piece_id)
-    value = db.get_first_value('SELECT 1 FROM board_piece_links WHERE piece_id = ? LIMIT 1', [piece_id])
-    !value.nil?
-  end
-
-  # Returns board rows for index based on default-owner/own visibility and optional public toggle.
-  def boards_for_owner(owner_id, show_public: false)
-    default_owner_id = default_premade_piece_owner_id
-    show_public_int = show_public ? 1 : 0
-    db.execute(
-      <<~SQL,
-        SELECT id, name, description, board_size, is_public, created_at, updated_at, owner_id
-        FROM boards
-        WHERE deleted_at IS NULL
-          AND (
-            owner_id = ?
-            OR (? > 0 AND owner_id = ?)
-            OR (? = 1 AND is_public = 1 AND owner_id != ? AND owner_id != ?)
-          )
-        ORDER BY id DESC
-      SQL
-      [default_owner_id, owner_id, owner_id, show_public_int, default_owner_id, owner_id]
-    )
-  end
-
-  # Finds one board visible to owner (default owner, own, or public).
-  def board_visible_by_id_for_owner(id, owner_id)
-    default_owner_id = default_premade_piece_owner_id
-    db.get_first_row(
-      <<~SQL,
-        SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
-        FROM boards
-        WHERE id = ?
-          AND deleted_at IS NULL
-          AND (
-            owner_id = ?
-            OR (? > 0 AND owner_id = ?)
-            OR is_public = 1
-          )
-      SQL
-      [id, default_owner_id, owner_id, owner_id]
-    )
-  end
-
-  # Finds one board by id owned by current owner.
-  def board_owned_by_id_for_owner(id, owner_id)
-    db.get_first_row(
-      <<~SQL,
-        SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
-        FROM boards
-        WHERE id = ?
-          AND deleted_at IS NULL
-          AND owner_id = ?
-      SQL
-      [id, owner_id]
-    )
-  end
-
   # Parses power_ids JSON safely into unique integer ids.
   def parse_power_ids_json(raw)
     JSON.parse(raw.to_s).map(&:to_i).uniq
   rescue JSON::ParserError
     []
-  end
-
-  # Fetches power rows for a set of ids.
-  def special_powers_by_ids(power_ids)
-    return [] if power_ids.empty?
-
-    placeholders = (['?'] * power_ids.length).join(',')
-    db.execute("SELECT id, name, description FROM powers WHERE id IN (#{placeholders}) ORDER BY id", power_ids)
-  end
-
-  # Loads movement methods and indexes them by id.
-  def movement_method_map(method_ids)
-    return {} if method_ids.empty?
-
-    placeholders = (['?'] * method_ids.length).join(',')
-    methods = db.execute("SELECT id, name, kind, vectors_json, supports_ray_limit FROM movement_methods WHERE id IN (#{placeholders})", method_ids)
-    methods.each_with_object({}) { |method, memo| memo[method['id']] = method }
-  end
-
-  # Filters selected power ids to ids that exist in DB.
-  def valid_power_ids(selected_power_ids)
-    return [] if selected_power_ids.empty?
-
-    placeholders = (['?'] * selected_power_ids.length).join(',')
-    db.execute("SELECT id FROM powers WHERE id IN (#{placeholders})", selected_power_ids).map { |row| row['id'].to_i }
   end
 
   # Parses JSON and returns only hash values.
@@ -610,25 +286,6 @@ helpers do
     File.delete(absolute_path) if File.file?(absolute_path)
   end
 
-  # Inserts one piece_moves row from normalized config values.
-  def insert_piece_move_row!(piece_id:, method:, ray_limit:, mode:, color_scope:, first_move_only:, now:)
-    db.execute(
-      'INSERT INTO piece_moves (piece_id, movement_method_id, name, kind, vectors_json, ray_limit, mode, color_scope, first_move_only, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [
-        piece_id,
-        method['id'],
-        method['name'],
-        method['kind'],
-        method['vectors_json'],
-        ray_limit,
-        mode,
-        color_scope,
-        first_move_only,
-        now,
-        now
-      ]
-    )
-  end
 end
 
 # Closes DB connection after each request.
@@ -662,7 +319,7 @@ post '/login' do
     redirect '/login'
   end
 
-  account = db.get_first_row('SELECT id, username, email, password_hash FROM accounts WHERE email = ?', [email])
+  account = find_account_by_email(email)
   authenticated = false
 
   if account && account['password_hash']
@@ -713,20 +370,14 @@ post '/register' do
     redirect '/register'
   end
 
-  existing = db.get_first_row('SELECT id FROM accounts WHERE email = ?', [email])
-  if existing
+  if account_exists_by_email?(email)
     set_flash('error', 'Email is already in use.')
     redirect '/register'
   end
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
   password_hash = BCrypt::Password.create(password)
-  db.execute(
-    'INSERT INTO accounts (username, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)',
-    [username, email, password_hash, now, now]
-  )
-
-  session[:account_id] = db.last_insert_row_id
+  session[:account_id] = create_account!(username: username, email: email, password_hash: password_hash, now: now)
   set_flash('success', 'Account created and logged in.')
   redirect '/pieces'
 rescue SQLite3::SQLException
@@ -787,29 +438,18 @@ post '/boards' do
   halt 422, errors.join(' ') unless errors.empty?
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-  board_id = nil
-
-  db.transaction
-  db.execute(
-    'INSERT INTO boards (owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-    [
-      owner_id,
-      name,
-      (description.empty? ? nil : description),
-      board_size,
-      JSON.generate(placements),
-      is_public,
-      now,
-      now
-    ]
+  board_id = create_board_with_links!(
+    owner_id: owner_id,
+    name: name,
+    description: (description.empty? ? nil : description),
+    board_size: board_size,
+    placements: placements,
+    is_public: is_public,
+    now: now
   )
-  board_id = db.last_insert_row_id
-  sync_board_piece_links!(board_id, placements)
-  db.commit
 
   redirect "/boards/#{board_id}"
 rescue SQLite3::SQLException => e
-  db.rollback
   halt 500, "Could not create board: #{e.message}"
 end
 
@@ -873,25 +513,18 @@ post '/boards/:id/update' do
   halt 422, errors.join(' ') unless errors.empty?
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-  db.transaction
-  db.execute(
-    'UPDATE boards SET name = ?, description = ?, board_size = ?, placements_json = ?, is_public = ?, updated_at = ? WHERE id = ?',
-    [
-      name,
-      (description.empty? ? nil : description),
-      board_size,
-      JSON.generate(placements),
-      is_public,
-      now,
-      id
-    ]
+  update_board_with_links!(
+    id: id,
+    name: name,
+    description: (description.empty? ? nil : description),
+    board_size: board_size,
+    placements: placements,
+    is_public: is_public,
+    now: now
   )
-  sync_board_piece_links!(id, placements)
-  db.commit
 
   redirect "/boards/#{id}"
 rescue SQLite3::SQLException => e
-  db.rollback
   halt 500, "Could not update board: #{e.message}"
 end
 
@@ -906,13 +539,9 @@ post '/boards/:id/delete' do
   halt 404, 'Board not found' unless board
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
-  db.transaction
-  db.execute('UPDATE boards SET deleted_at = ?, updated_at = ? WHERE id = ?', [now, now, id])
-  delete_board_piece_links!(id)
-  db.commit
+  soft_delete_board_with_links!(id: id, now: now)
   redirect '/boards'
 rescue SQLite3::SQLException => e
-  db.rollback
   halt 500, "Could not delete board: #{e.message}"
 end
 
@@ -928,8 +557,8 @@ end
 # Renders new piece form.
 get '/pieces/new' do
   require_login!
-  @movement_methods = db.execute('SELECT id, key, name, kind, vectors_json, supports_ray_limit, description FROM movement_methods ORDER BY id')
-  @powers = db.execute('SELECT id, name, description FROM powers ORDER BY id')
+  @movement_methods = movement_methods_all
+  @powers = powers_all
   slim(:new)
 end
 
@@ -962,66 +591,59 @@ post '/pieces' do
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
   piece_id = nil
 
-  db.transaction
-  db.execute(
-    'INSERT INTO pieces (owner_id, source_piece_id, name, description, image_path, icon_base_color, is_public, power_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [
-      owner_id,
-      nil,
-      name,
-      (description.empty? ? nil : description),
-      image_path,
-      icon_base_color,
-      is_public,
-      JSON.generate(filtered_power_ids),
-      now,
-      now
-    ]
-  )
-  piece_id = db.last_insert_row_id
-
-  method_ids.each do |method_id|
-    method = method_map[method_id]
-    next unless method
-
-    ray_limit = parsed_ray_limit_for_method(method, params.fetch('ray_limit', {}).fetch(method_id.to_s, ''))
-    mode = normalized_mode(params.dig('mode', method_id.to_s))
-    color_scope = normalized_color_scope(params.dig('color_scope', method_id.to_s))
-    first_move_only = params.dig('first_move_only', method_id.to_s) == '1' ? 1 : 0
-
-    insert_piece_move_row!(
-      piece_id: piece_id,
-      method: method,
-      ray_limit: ray_limit,
-      mode: mode,
-      color_scope: color_scope,
-      first_move_only: first_move_only,
+  with_transaction do
+    piece_id = create_piece_record!(
+      owner_id: owner_id,
+      name: name,
+      description: (description.empty? ? nil : description),
+      image_path: image_path,
+      icon_base_color: icon_base_color,
+      is_public: is_public,
+      power_ids_json: JSON.generate(filtered_power_ids),
       now: now
     )
 
-    secondary_enabled = params.dig('secondary_mode_enabled', method_id.to_s) == '1'
-    next unless secondary_enabled
-    next unless method['supports_ray_limit'].to_i == 1
-    next unless %w[move capture].include?(mode)
+    method_ids.each do |method_id|
+      method = method_map[method_id]
+      next unless method
 
-    secondary_mode = (mode == 'move' ? 'capture' : 'move')
-    secondary_ray_limit = parsed_ray_limit_for_method(method, params.fetch('secondary_ray_limit', {}).fetch(method_id.to_s, ''))
+      ray_limit = parsed_ray_limit_for_method(method, params.fetch('ray_limit', {}).fetch(method_id.to_s, ''))
+      mode = normalized_mode(params.dig('mode', method_id.to_s))
+      color_scope = normalized_color_scope(params.dig('color_scope', method_id.to_s))
+      first_move_only = params.dig('first_move_only', method_id.to_s) == '1' ? 1 : 0
 
-    insert_piece_move_row!(
-      piece_id: piece_id,
-      method: method,
-      ray_limit: secondary_ray_limit,
-      mode: secondary_mode,
-      color_scope: color_scope,
-      first_move_only: first_move_only,
-      now: now
-    )
+      insert_piece_move_row!(
+        piece_id: piece_id,
+        method: method,
+        ray_limit: ray_limit,
+        mode: mode,
+        color_scope: color_scope,
+        first_move_only: first_move_only,
+        now: now
+      )
+
+      secondary_enabled = params.dig('secondary_mode_enabled', method_id.to_s) == '1'
+      next unless secondary_enabled
+      next unless method['supports_ray_limit'].to_i == 1
+      next unless %w[move capture].include?(mode)
+
+      secondary_mode = (mode == 'move' ? 'capture' : 'move')
+      secondary_ray_limit = parsed_ray_limit_for_method(method, params.fetch('secondary_ray_limit', {}).fetch(method_id.to_s, ''))
+
+      insert_piece_move_row!(
+        piece_id: piece_id,
+        method: method,
+        ray_limit: secondary_ray_limit,
+        mode: secondary_mode,
+        color_scope: color_scope,
+        first_move_only: first_move_only,
+        now: now
+      )
+    end
   end
-  db.commit
 
   redirect "/pieces/#{piece_id}"
 rescue SQLite3::SQLException => e
-  db.rollback
   halt 500, "Could not create piece: #{e.message}"
 end
 
@@ -1035,17 +657,14 @@ get '/pieces/:id/edit' do
   @piece = piece_owned_by_id_for_owner(id, owner_id)
   halt 404, 'Piece not found' unless @piece
 
-  @movement_methods = db.execute('SELECT id, key, name, kind, vectors_json, supports_ray_limit, description FROM movement_methods ORDER BY id')
-  @powers = db.execute('SELECT id, name, description FROM powers ORDER BY id')
+  @movement_methods = movement_methods_all
+  @powers = powers_all
   @selected_power_ids = parse_power_ids_json(@piece['power_ids'])
   @move_config_by_method_id = {}
   @secondary_move_config_by_method_id = {}
   move_rows_by_method_id = Hash.new { |hash, key| hash[key] = [] }
 
-  db.execute(
-    'SELECT id, movement_method_id, ray_limit, mode, color_scope, first_move_only FROM piece_moves WHERE piece_id = ? ORDER BY id',
-    [id]
-  ).each do |row|
+  piece_move_rows_for_piece(id).each do |row|
     method_id = row['movement_method_id']
     next if method_id.nil?
     move_rows_by_method_id[method_id.to_i] << row
@@ -1104,56 +723,61 @@ post '/pieces/:id/update' do
   filtered_power_ids = valid_power_ids(selected_power_ids)
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-  db.transaction
-  db.execute(
-    'UPDATE pieces SET name = ?, description = ?, image_path = ?, icon_base_color = ?, is_public = ?, power_ids = ?, updated_at = ? WHERE id = ?',
-    [name, (description.empty? ? nil : description), image_path, icon_base_color, is_public, JSON.generate(filtered_power_ids), now, id]
-  )
-
-  db.execute('DELETE FROM piece_moves WHERE piece_id = ?', [id])
-
-  method_ids.each do |method_id|
-    method = method_map[method_id]
-    next unless method
-
-    ray_limit = parsed_ray_limit_for_method(method, params.fetch('ray_limit', {}).fetch(method_id.to_s, ''))
-    mode = normalized_mode(params.dig('mode', method_id.to_s))
-    color_scope = normalized_color_scope(params.dig('color_scope', method_id.to_s))
-    first_move_only = params.dig('first_move_only', method_id.to_s) == '1' ? 1 : 0
-
-    insert_piece_move_row!(
-      piece_id: id,
-      method: method,
-      ray_limit: ray_limit,
-      mode: mode,
-      color_scope: color_scope,
-      first_move_only: first_move_only,
+  with_transaction do
+    update_piece_record!(
+      id: id,
+      name: name,
+      description: (description.empty? ? nil : description),
+      image_path: image_path,
+      icon_base_color: icon_base_color,
+      is_public: is_public,
+      power_ids_json: JSON.generate(filtered_power_ids),
       now: now
     )
 
-    secondary_enabled = params.dig('secondary_mode_enabled', method_id.to_s) == '1'
-    next unless secondary_enabled
-    next unless method['supports_ray_limit'].to_i == 1
-    next unless %w[move capture].include?(mode)
+    delete_piece_moves_for_piece!(id)
 
-    secondary_mode = (mode == 'move' ? 'capture' : 'move')
-    secondary_ray_limit = parsed_ray_limit_for_method(method, params.fetch('secondary_ray_limit', {}).fetch(method_id.to_s, ''))
+    method_ids.each do |method_id|
+      method = method_map[method_id]
+      next unless method
 
-    insert_piece_move_row!(
-      piece_id: id,
-      method: method,
-      ray_limit: secondary_ray_limit,
-      mode: secondary_mode,
-      color_scope: color_scope,
-      first_move_only: first_move_only,
-      now: now
-    )
+      ray_limit = parsed_ray_limit_for_method(method, params.fetch('ray_limit', {}).fetch(method_id.to_s, ''))
+      mode = normalized_mode(params.dig('mode', method_id.to_s))
+      color_scope = normalized_color_scope(params.dig('color_scope', method_id.to_s))
+      first_move_only = params.dig('first_move_only', method_id.to_s) == '1' ? 1 : 0
+
+      insert_piece_move_row!(
+        piece_id: id,
+        method: method,
+        ray_limit: ray_limit,
+        mode: mode,
+        color_scope: color_scope,
+        first_move_only: first_move_only,
+        now: now
+      )
+
+      secondary_enabled = params.dig('secondary_mode_enabled', method_id.to_s) == '1'
+      next unless secondary_enabled
+      next unless method['supports_ray_limit'].to_i == 1
+      next unless %w[move capture].include?(mode)
+
+      secondary_mode = (mode == 'move' ? 'capture' : 'move')
+      secondary_ray_limit = parsed_ray_limit_for_method(method, params.fetch('secondary_ray_limit', {}).fetch(method_id.to_s, ''))
+
+      insert_piece_move_row!(
+        piece_id: id,
+        method: method,
+        ray_limit: secondary_ray_limit,
+        mode: secondary_mode,
+        color_scope: color_scope,
+        first_move_only: first_move_only,
+        now: now
+      )
+    end
   end
-  db.commit
 
   redirect "/pieces/#{id}"
 rescue SQLite3::SQLException => e
-  db.rollback
   halt 500, "Could not update piece: #{e.message}"
 end
 
@@ -1170,9 +794,9 @@ post '/pieces/:id/delete' do
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
 
   if piece_linked_to_any_board?(id)
-    db.execute('UPDATE pieces SET owner_id = -1, is_public = 0, updated_at = ? WHERE id = ?', [now, id])
+    mark_piece_as_detached!(piece_id: id, now: now)
   else
-    db.execute('DELETE FROM pieces WHERE id = ?', [id])
+    hard_delete_piece!(id)
   end
 
   redirect '/pieces'
@@ -1190,14 +814,7 @@ get '/pieces/:id' do
   power_ids = parse_power_ids_json(@piece['power_ids'])
   @preview_power_ids = power_ids
 
-  @piece_moves = db.execute(<<~SQL, [id])
-    SELECT pm.id, pm.movement_method_id, pm.name, pm.kind, pm.ray_limit, pm.mode, pm.color_scope, pm.first_move_only, pm.vectors_json,
-           mm.name AS method_name, mm.description AS method_description
-    FROM piece_moves pm
-    LEFT JOIN movement_methods mm ON mm.id = pm.movement_method_id
-    WHERE pm.piece_id = ?
-    ORDER BY pm.id
-  SQL
+  @piece_moves = piece_moves_for_show(id)
   @preview_piece_moves = preview_piece_moves_payload(@piece_moves)
 
   @special_powers = special_powers_by_ids(power_ids)
