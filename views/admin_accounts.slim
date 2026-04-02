@@ -1,0 +1,18 @@
+h1 Admin Panel: Accounts
+
+- if @accounts.empty?
+  p No accounts found.
+- else
+  ul
+    - @accounts.each do |account|
+      li
+        strong = "#{account['username']} (##{account['id']})"
+        |  - #{account['email']}
+        |  - role: #{account['role']}
+        |  - 
+        a href="/admin/accounts/#{account['id']}/pieces" Pieces
+        |  | 
+        a href="/admin/accounts/#{account['id']}/boards" Boards
+
+p
+  a href="/pieces" Back to pieces

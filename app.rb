@@ -12,8 +12,14 @@ DB_PATH = 'databas.db'
 ICON_UPLOAD_DIR = File.join('public', 'icons', 'pieces', 'uploads')
 SESSION_SECRET_MIN_LENGTH = 64
 DEFAULT_PREMADE_PIECE_OWNER_ID = 1
+LOGIN_RATE_LIMIT_MAX_ATTEMPTS = 5
+LOGIN_RATE_LIMIT_WINDOW_SECONDS = 600
 
 require_relative 'model'
+
+if settings.development?
+  also_reload './model.rb'
+end
 
 session_secret = ENV['SESSION_SECRET']
 if session_secret.nil? || session_secret.bytesize < SESSION_SECRET_MIN_LENGTH
@@ -26,9 +32,9 @@ set :session_secret, session_secret
 
 SchemaModel.setup_database!(db_path: DB_PATH)
 
-helpers do
-  include QueryModel
+helpers QueryModel
 
+helpers do
   # Stores one flash message in session.
   def set_flash(type, message)
     session[:flash] = { 'type' => type.to_s, 'message' => message.to_s }
@@ -52,6 +58,20 @@ helpers do
     account ? account['id'].to_i : 0
   end
 
+  # Returns current permission role.
+  def current_role
+    account = current_account
+    return 'guest' unless account
+
+    role = account['role'].to_s
+    %w[admin user].include?(role) ? role : 'user'
+  end
+
+  # Returns true when current account has admin role.
+  def admin?
+    current_role == 'admin'
+  end
+
   # Reads the list-page toggle for including other users' public content.
   def show_public_enabled_param?(value)
     value.to_s == '1'
@@ -60,6 +80,51 @@ helpers do
   # Returns owner id used by premade default library.
   def default_premade_piece_owner_id
     DEFAULT_PREMADE_PIECE_OWNER_ID
+  end
+
+  # Checks if the resource owner is the default admin library owner.
+  def default_owner_resource?(owner_id)
+    owner_id.to_i == default_premade_piece_owner_id
+  end
+
+  # Checks if current account is owner of the resource.
+  def own_resource?(owner_id)
+    current_owner_id.positive? && owner_id.to_i == current_owner_id
+  end
+
+  # Central permission check used by all actions.
+  def permitted?(permission, owner_id: nil, is_public: false)
+    return true if admin?
+
+    case permission
+    when :piece_read, :board_read
+      default_owner_resource?(owner_id) || is_public || own_resource?(owner_id)
+    when :piece_create, :board_create
+      current_role == 'user'
+    when :piece_update, :piece_delete, :board_update, :board_delete
+      own_resource?(owner_id)
+    when :admin_panel
+      false
+    else
+      false
+    end
+  end
+
+  # Aborts request when permission check fails.
+  def require_permission!(permission, owner_id: nil, is_public: false, on_fail: 403)
+    return if permitted?(permission, owner_id: owner_id, is_public: is_public)
+    if current_role == 'guest' && on_fail != 404
+      set_flash('error', 'You need to login first.')
+      redirect '/login'
+    end
+    halt(on_fail, on_fail == 404 ? 'Not found' : 'Forbidden')
+  end
+
+  # Returns true when login attempts are above threshold for this email+IP window.
+  def login_rate_limited?(email, ip_address)
+    since = (Time.now.utc - LOGIN_RATE_LIMIT_WINDOW_SECONDS).strftime('%Y-%m-%dT%H:%M:%SZ')
+    failed_count = recent_failed_login_attempts(email: email, ip_address: ip_address, since: since)
+    failed_count >= LOGIN_RATE_LIMIT_MAX_ATTEMPTS
   end
 
   # Returns a memoized DB connection configured to return row hashes.
@@ -313,9 +378,15 @@ end
 post '/login' do
   email = params[:email].to_s.strip.downcase
   password = params[:password].to_s
+  ip_address = request.ip.to_s
 
   if email.empty? || password.empty?
     set_flash('error', 'Fill in email and password.')
+    redirect '/login'
+  end
+
+  if login_rate_limited?(email, ip_address)
+    set_flash('error', 'Too many failed login attempts. Try again in a few minutes.')
     redirect '/login'
   end
 
@@ -330,7 +401,11 @@ post '/login' do
     end
   end
 
-  if account && authenticated
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  login_success = account && authenticated
+  log_login_attempt!(email: email, ip_address: ip_address, success: login_success, now: now)
+
+  if login_success
     session[:account_id] = account['id'].to_i
     set_flash('success', 'Logged in.')
     redirect '/pieces'
@@ -392,8 +467,42 @@ post '/logout' do
   redirect '/pieces'
 end
 
+# Admin panel: list all accounts.
+get '/admin/accounts' do
+  require_permission!(:admin_panel)
+  @accounts = admin_accounts_list
+  slim :admin_accounts
+end
+
+# Admin panel: show one account's owned pieces.
+get '/admin/accounts/:id/pieces' do
+  require_permission!(:admin_panel)
+  halt 404, 'Account not found' unless params[:id] =~ /\A\d+\z/
+  account_id = params[:id].to_i
+
+  @account = account_by_id(account_id)
+  halt 404, 'Account not found' unless @account
+
+  @pieces = pieces_owned_by_account(account_id)
+  slim :admin_account_pieces
+end
+
+# Admin panel: show one account's owned boards.
+get '/admin/accounts/:id/boards' do
+  require_permission!(:admin_panel)
+  halt 404, 'Account not found' unless params[:id] =~ /\A\d+\z/
+  account_id = params[:id].to_i
+
+  @account = account_by_id(account_id)
+  halt 404, 'Account not found' unless @account
+
+  @boards = boards_owned_by_account(account_id)
+  slim :admin_account_boards
+end
+
 # Lists active boards for current owner.
 get '/boards' do
+  require_permission!(:board_read, owner_id: default_premade_piece_owner_id, is_public: true)
   owner_id = current_owner_id
   @show_public = show_public_enabled_param?(params[:show_public])
   @boards = boards_for_owner(owner_id, show_public: @show_public)
@@ -402,7 +511,7 @@ end
 
 # Renders board creation form with simple click placement editor.
 get '/boards/new' do
-  require_login!
+  require_permission!(:board_create)
   owner_id = current_owner_id
   @available_pieces = available_pieces_for_owner(owner_id)
   @board = {
@@ -418,7 +527,7 @@ end
 
 # Creates a board from submitted editor JSON.
 post '/boards' do
-  require_login!
+  require_permission!(:board_create)
   owner_id = current_owner_id
   available_piece_ids = available_pieces_for_owner(owner_id).map { |row| row['id'].to_i }
 
@@ -459,8 +568,14 @@ get '/boards/:id' do
   owner_id = current_owner_id
   id = params[:id].to_i
 
-  @board = board_visible_by_id_for_owner(id, owner_id)
+  @board = admin? ? board_by_id_any(id) : board_visible_by_id_for_owner(id, owner_id)
   halt 404, 'Board not found' unless @board
+  require_permission!(
+    :board_read,
+    owner_id: @board['owner_id'].to_i,
+    is_public: @board['is_public'].to_i == 1,
+    on_fail: 404
+  )
 
   @placements = parse_placements_for_view(@board['placements_json'])
   piece_ids = @placements.map { |placement| placement['piece_id'].to_i }.uniq
@@ -473,30 +588,30 @@ end
 
 # Renders board edit form with current placements loaded.
 get '/boards/:id/edit' do
-  require_login!
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
-  owner_id = current_owner_id
   id = params[:id].to_i
 
-  @board = board_owned_by_id_for_owner(id, owner_id)
+  @board = board_by_id_any(id)
   halt 404, 'Board not found' unless @board
+  require_permission!(:board_update, owner_id: @board['owner_id'].to_i, on_fail: 404)
 
-  @available_pieces = available_pieces_for_owner(owner_id)
+  owner_scope_id = admin? ? @board['owner_id'].to_i : current_owner_id
+  @available_pieces = available_pieces_for_owner(owner_scope_id)
   @editor_mode = :edit
   slim :boards_edit
 end
 
 # Updates a board and replaces its placements JSON.
 post '/boards/:id/update' do
-  require_login!
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
-  owner_id = current_owner_id
   id = params[:id].to_i
 
-  board = board_owned_by_id_for_owner(id, owner_id)
+  board = board_by_id_any(id)
   halt 404, 'Board not found' unless board
+  require_permission!(:board_update, owner_id: board['owner_id'].to_i, on_fail: 404)
 
-  available_piece_ids = available_pieces_for_owner(owner_id).map { |row| row['id'].to_i }
+  owner_scope_id = admin? ? board['owner_id'].to_i : current_owner_id
+  available_piece_ids = available_pieces_for_owner(owner_scope_id).map { |row| row['id'].to_i }
   name = params[:name].to_s.strip
   description = params[:description].to_s.strip
   board_size = normalized_board_size(params[:board_size])
@@ -530,13 +645,12 @@ end
 
 # Soft deletes one board.
 post '/boards/:id/delete' do
-  require_login!
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
-  owner_id = current_owner_id
   id = params[:id].to_i
 
-  board = board_owned_by_id_for_owner(id, owner_id)
+  board = board_by_id_any(id)
   halt 404, 'Board not found' unless board
+  require_permission!(:board_delete, owner_id: board['owner_id'].to_i, on_fail: 404)
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
   soft_delete_board_with_links!(id: id, now: now)
@@ -547,6 +661,7 @@ end
 
 # Lists active pieces.
 get '/pieces' do
+  require_permission!(:piece_read, owner_id: default_premade_piece_owner_id, is_public: true)
   owner_id = current_owner_id
   @show_public = show_public_enabled_param?(params[:show_public])
   @pieces = pieces_for_owner(owner_id, show_public: @show_public)
@@ -556,7 +671,7 @@ end
 
 # Renders new piece form.
 get '/pieces/new' do
-  require_login!
+  require_permission!(:piece_create)
   @movement_methods = movement_methods_all
   @powers = powers_all
   slim(:new)
@@ -564,7 +679,7 @@ end
 
 # Creates a piece and its configured movement rows.
 post '/pieces' do
-  require_login!
+  require_permission!(:piece_create)
   owner_id = current_owner_id
   name = params[:name].to_s.strip
   description = params[:description].to_s.strip
@@ -649,13 +764,12 @@ end
 
 # Renders edit form with current move config grouped per method.
 get '/pieces/:id/edit' do
-  require_login!
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
-  owner_id = current_owner_id
 
-  @piece = piece_owned_by_id_for_owner(id, owner_id)
+  @piece = piece_by_id_any(id)
   halt 404, 'Piece not found' unless @piece
+  require_permission!(:piece_update, owner_id: @piece['owner_id'].to_i, on_fail: 404)
 
   @movement_methods = movement_methods_all
   @powers = powers_all
@@ -691,13 +805,12 @@ end
 
 # Updates piece fields and rewrites its movement rows.
 post '/pieces/:id/update' do
-  require_login!
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
-  owner_id = current_owner_id
 
-  piece = piece_owned_by_id_for_owner(id, owner_id)
+  piece = piece_by_id_any(id)
   halt 404, 'Piece not found' unless piece
+  require_permission!(:piece_update, owner_id: piece['owner_id'].to_i, on_fail: 404)
 
   name = params[:name].to_s.strip
   description = params[:description].to_s.strip
@@ -783,13 +896,12 @@ end
 
 # Deletes one piece.
 post '/pieces/:id/delete' do
-  require_login!
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
-  owner_id = current_owner_id
 
-  piece = piece_owned_by_id_for_owner(id, owner_id)
+  piece = piece_by_id_any(id)
   halt 404, 'Piece not found' unless piece
+  require_permission!(:piece_delete, owner_id: piece['owner_id'].to_i, on_fail: 404)
 
   now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -808,8 +920,14 @@ get '/pieces/:id' do
   id = params[:id].to_i
   owner_id = current_owner_id
 
-  @piece = piece_visible_by_id_for_owner(id, owner_id)
+  @piece = admin? ? piece_by_id_any(id) : piece_visible_by_id_for_owner(id, owner_id)
   halt 404, 'Piece not found' unless @piece
+  require_permission!(
+    :piece_read,
+    owner_id: @piece['owner_id'].to_i,
+    is_public: @piece['is_public'].to_i == 1,
+    on_fail: 404
+  )
 
   power_ids = parse_power_ids_json(@piece['power_ids'])
   @preview_power_ids = power_ids

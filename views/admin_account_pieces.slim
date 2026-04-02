@@ -1,0 +1,13 @@
+h1 = "Admin: Pieces for #{@account['username']} (##{@account['id']})"
+
+- if @pieces.empty?
+  p No pieces for this account.
+- else
+  ul
+    - @pieces.each do |piece|
+      li
+        a href="/pieces/#{piece['id']}" = "#{piece['name']} (##{piece['id']})"
+        |  - #{piece['is_public'].to_i == 1 ? 'public' : 'private'}
+
+p
+  a href="/admin/accounts" Back to accounts

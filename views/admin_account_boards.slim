@@ -1,0 +1,14 @@
+h1 = "Admin: Boards for #{@account['username']} (##{@account['id']})"
+
+- if @boards.empty?
+  p No boards for this account.
+- else
+  ul
+    - @boards.each do |board|
+      li
+        a href="/boards/#{board['id']}" = "#{board['name']} (##{board['id']})"
+        |  - size: #{board['board_size']}
+        |  - #{board['is_public'].to_i == 1 ? 'public' : 'private'}
+
+p
+  a href="/admin/accounts" Back to accounts

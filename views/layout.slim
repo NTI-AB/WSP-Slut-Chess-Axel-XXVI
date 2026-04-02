@@ -16,6 +16,9 @@ html
       a href="/boards/new" Create board
       |  | 
       - if @current_account
+        - if @current_account['role'].to_s == 'admin'
+          a href="/admin/accounts" Admin panel
+          |  | 
         span Logged in as #{@current_account['username']}
         |  | 
         form action="/logout" method="post" style="display:inline;"

@@ -13,6 +13,7 @@ ACCOUNT_SEEDS = [
     id: 1,
     username: 'admin',
     email: 'admin@gmail.com',
+    role: 'admin',
     password_hash: '$2a$12$oqDxmjA1BcerlMRAr0PUfO8c.WHmpCEkvy9xooaqr/prOK8xtBGHG',
     created_at: '2026-03-19T15:16:00Z',
     updated_at: '2026-03-19T15:16:00Z'
@@ -252,6 +253,7 @@ def create_tables(db)
       id INTEGER PRIMARY KEY,
       username TEXT NOT NULL,
       email TEXT NOT NULL UNIQUE,
+      role TEXT NOT NULL DEFAULT 'user',
       password_hash TEXT NOT NULL,
       created_at DATETIME NOT NULL,
       updated_at DATETIME NOT NULL
@@ -347,11 +349,12 @@ end
 def populate_accounts(db)
   ACCOUNT_SEEDS.each do |account|
     db.execute(
-      'INSERT INTO accounts (id, username, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO accounts (id, username, email, role, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [
         account[:id],
         account[:username],
         account[:email],
+        account[:role] || 'user',
         account[:password_hash],
         account[:created_at],
         account[:updated_at]
