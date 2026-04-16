@@ -21,7 +21,7 @@ ul
         |  
       a href="/pieces/#{piece['id']}#{query_suffix}" = "#{piece['name']} (##{piece['id']})"
       |  - #{badge}
-      - if piece['owner_id'].to_i == owner_id
+      - if admin? || piece['owner_id'].to_i == owner_id
         |  - 
         a href="/pieces/#{piece['id']}/edit#{query_suffix}" Edit
       - if piece['description'] && !piece['description'].empty?

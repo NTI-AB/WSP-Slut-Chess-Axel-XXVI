@@ -21,7 +21,7 @@ p
       li
         a href="/boards/#{board['id']}#{query_suffix}" = "#{board['name']} (##{board['id']})"
         |  - #{badge}
-        - if board['owner_id'].to_i == owner_id
+        - if admin? || board['owner_id'].to_i == owner_id
           |  - 
           a href="/boards/#{board['id']}/edit#{query_suffix}" Edit
         |  - size: #{board['board_size']}

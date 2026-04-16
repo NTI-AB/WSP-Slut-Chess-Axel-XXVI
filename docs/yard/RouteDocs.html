@@ -113,6 +113,28 @@ These methods are documentation stubs only (not runtime code).</p>
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#get_account-instance_method" title="#get_account (instance method)">#<strong>get_account</strong>  &#x21d2; String </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Render current account settings.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#get_admin_account_boards-instance_method" title="#get_admin_account_boards (instance method)">#<strong>get_admin_account_boards</strong>(id:)  &#x21d2; String </a>
     
 
@@ -421,6 +443,50 @@ These methods are documentation stubs only (not runtime code).</p>
         <li class="public ">
   <span class="summary_signature">
     
+      <a href="#post_account_delete-instance_method" title="#post_account_delete (instance method)">#<strong>post_account_delete</strong>  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Delete current account and owned content.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#post_admin_account_delete-instance_method" title="#post_admin_account_delete (instance method)">#<strong>post_admin_account_delete</strong>(id:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Admin: delete one account and owned content.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
       <a href="#post_boards-instance_method" title="#post_boards (instance method)">#<strong>post_boards</strong>(name:, description:, board_size:, placements_json:, is_public: nil)  &#x21d2; void </a>
     
 
@@ -627,7 +693,59 @@ These methods are documentation stubs only (not runtime code).</p>
 
     
       <div class="method_details first">
-  <h3 class="signature first" id="get_admin_account_boards-instance_method">
+  <h3 class="signature first" id="get_account-instance_method">
+  
+    #<strong>get_account</strong>  &#x21d2; <tt>String</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Render current account settings.
+Route: GET /account</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>HTML</p></div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+39</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 39</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_get_account'>get_account</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="get_admin_account_boards-instance_method">
   
     #<strong>get_admin_account_boards</strong>(id:)  &#x21d2; <tt>String</tt> 
   
@@ -682,10 +800,10 @@ Route: GET /admin/accounts/:id/boards</p>
       <pre class="lines">
 
 
-51</pre>
+61</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 51</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 61</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_admin_account_boards'>get_admin_account_boards</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -749,10 +867,10 @@ Route: GET /admin/accounts/:id/pieces</p>
       <pre class="lines">
 
 
-45</pre>
+55</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 45</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 55</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_admin_account_pieces'>get_admin_account_pieces</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -801,10 +919,10 @@ Route: GET /admin/accounts</p>
       <pre class="lines">
 
 
-39</pre>
+49</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 39</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 49</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_admin_accounts'>get_admin_accounts</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -868,10 +986,10 @@ Route: GET /boards/:id</p>
       <pre class="lines">
 
 
-78</pre>
+94</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 78</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 94</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_board'>get_board</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -937,10 +1055,10 @@ Route: GET /boards</p>
       <pre class="lines">
 
 
-57</pre>
+73</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 57</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 73</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_boards'>get_boards</span><span class='lparen'>(</span><span class='label'>show_public:</span> <span class='kw'>nil</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1004,10 +1122,10 @@ Route: GET /boards/:id/edit</p>
       <pre class="lines">
 
 
-84</pre>
+100</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 84</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 100</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_edit_board'>get_edit_board</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1071,10 +1189,10 @@ Route: GET /pieces/:id/edit</p>
       <pre class="lines">
 
 
-130</pre>
+146</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 130</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 146</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_edit_piece'>get_edit_piece</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1174,10 +1292,10 @@ Route: GET /boards/new</p>
       <pre class="lines">
 
 
-62</pre>
+78</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 62</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 78</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_new_board'>get_new_board</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1226,10 +1344,10 @@ Route: GET /pieces/new</p>
       <pre class="lines">
 
 
-112</pre>
+128</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 112</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 128</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_new_piece'>get_new_piece</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1293,10 +1411,10 @@ Route: GET /pieces/:id</p>
       <pre class="lines">
 
 
-155</pre>
+171</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 155</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 171</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_piece'>get_piece</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1362,10 +1480,10 @@ Route: GET /pieces</p>
       <pre class="lines">
 
 
-107</pre>
+123</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 107</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 123</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_get_pieces'>get_pieces</span><span class='lparen'>(</span><span class='label'>show_public:</span> <span class='kw'>nil</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1460,6 +1578,93 @@ Route: GET /pieces</p>
 </div>
     
       <div class="method_details ">
+  <h3 class="signature " id="post_account_delete-instance_method">
+  
+    #<strong>post_account_delete</strong>  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Delete current account and owned content.
+Route: POST /account/delete</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+44</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 44</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_post_account_delete'>post_account_delete</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="post_admin_account_delete-instance_method">
+  
+    #<strong>post_admin_account_delete</strong>(id:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Admin: delete one account and owned content.
+Route: POST /admin/accounts/:id/delete</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 67</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_post_admin_account_delete'>post_admin_account_delete</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
   <h3 class="signature " id="post_boards-instance_method">
   
     #<strong>post_boards</strong>(name:, description:, board_size:, placements_json:, is_public: nil)  &#x21d2; <tt>void</tt> 
@@ -1545,10 +1750,10 @@ Route: POST /boards</p>
       <pre class="lines">
 
 
-72</pre>
+88</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 72</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 88</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post_boards'>post_boards</span><span class='lparen'>(</span><span class='label'>name:</span><span class='comma'>,</span> <span class='label'>description:</span><span class='comma'>,</span> <span class='label'>board_size:</span><span class='comma'>,</span> <span class='label'>placements_json:</span><span class='comma'>,</span> <span class='label'>is_public:</span> <span class='kw'>nil</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1596,10 +1801,10 @@ Route: POST /boards/:id/delete</p>
       <pre class="lines">
 
 
-101</pre>
+117</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 101</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 117</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post_delete_board'>post_delete_board</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1647,10 +1852,10 @@ Route: POST /pieces/:id/delete</p>
       <pre class="lines">
 
 
-149</pre>
+165</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 149</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 165</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post_delete_piece'>post_delete_piece</span><span class='lparen'>(</span><span class='label'>id:</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -1870,10 +2075,10 @@ Route: POST /pieces</p>
       <pre class="lines">
 
 
-124</pre>
+140</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 124</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 140</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post_pieces'>post_pieces</span><span class='lparen'>(</span><span class='label'>name:</span><span class='comma'>,</span> <span class='label'>description:</span><span class='comma'>,</span> <span class='label'>icon_file:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>icon_base_color:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>is_public:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>method_ids:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>power_ids:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -2061,10 +2266,10 @@ Route: POST /boards/:id/update</p>
       <pre class="lines">
 
 
-95</pre>
+111</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 95</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 111</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post_update_board'>post_update_board</span><span class='lparen'>(</span><span class='label'>id:</span><span class='comma'>,</span> <span class='label'>name:</span><span class='comma'>,</span> <span class='label'>description:</span><span class='comma'>,</span> <span class='label'>board_size:</span><span class='comma'>,</span> <span class='label'>placements_json:</span><span class='comma'>,</span> <span class='label'>is_public:</span> <span class='kw'>nil</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -2199,10 +2404,10 @@ Route: POST /pieces/:id/update</p>
       <pre class="lines">
 
 
-143</pre>
+159</pre>
     </td>
     <td>
-      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 143</span>
+      <pre class="code"><span class="info file"># File 'docs/yard_routes.rb', line 159</span>
 
 <span class='kw'>def</span> <span class='id identifier rubyid_post_update_piece'>post_update_piece</span><span class='lparen'>(</span><span class='label'>id:</span><span class='comma'>,</span> <span class='label'>name:</span><span class='comma'>,</span> <span class='label'>description:</span><span class='comma'>,</span> <span class='label'>icon_file:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>icon_base_color:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>is_public:</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='label'>method_ids:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='comma'>,</span> <span class='label'>power_ids:</span> <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='semicolon'>;</span> <span class='kw'>end</span></pre>
     </td>
@@ -2215,7 +2420,7 @@ Route: POST /pieces/:id/update</p>
 </div>
 
       <div id="footer">
-  Generated on Thu Apr 16 09:39:47 2026 by
+  Generated on Thu Apr 16 16:08:28 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.41 (ruby-3.3.4).
 </div>

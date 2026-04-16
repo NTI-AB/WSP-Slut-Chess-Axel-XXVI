@@ -20,7 +20,7 @@ p
     |  #{@piece['description']}
 
 /- Edit/delete controls for owned pieces.
-- if @piece['owner_id'].to_i == owner_id
+- if admin? || @piece['owner_id'].to_i == owner_id
   p
     a href="/pieces/#{@piece['id']}/edit" Edit piece
 

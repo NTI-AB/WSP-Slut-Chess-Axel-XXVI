@@ -66,4 +66,57 @@ module QueryModel
       [owner_id]
     )
   end
+
+  # Deletes an account and cleans up owned boards/pieces.
+  # Boards are removed first, then pieces:
+  # - piece linked by remaining boards => detach owner (owner_id = -1)
+  # - piece not linked by any board   => hard delete (+ piece_moves cleanup)
+  def delete_account_and_owned_content!(account_id:, now:)
+    db.transaction
+
+    board_ids = db.execute(
+      'SELECT id FROM boards WHERE owner_id = ? AND deleted_at IS NULL',
+      [account_id]
+    ).map { |row| row['id'].to_i }
+
+    unless board_ids.empty?
+      placeholders = (['?'] * board_ids.length).join(',')
+      db.execute(
+        "UPDATE boards SET deleted_at = ?, updated_at = ? WHERE id IN (#{placeholders})",
+        [now, now, *board_ids]
+      )
+      db.execute(
+        "DELETE FROM board_piece_links WHERE board_id IN (#{placeholders})",
+        board_ids
+      )
+    end
+
+    piece_ids = db.execute(
+      'SELECT id FROM pieces WHERE owner_id = ? AND deleted_at IS NULL',
+      [account_id]
+    ).map { |row| row['id'].to_i }
+
+    piece_ids.each do |piece_id|
+      linked_elsewhere = !db.get_first_value(
+        'SELECT 1 FROM board_piece_links WHERE piece_id = ? LIMIT 1',
+        [piece_id]
+      ).nil?
+
+      if linked_elsewhere
+        db.execute(
+          'UPDATE pieces SET owner_id = -1, is_public = 0, updated_at = ? WHERE id = ?',
+          [now, piece_id]
+        )
+      else
+        db.execute('DELETE FROM piece_moves WHERE piece_id = ?', [piece_id])
+        db.execute('DELETE FROM pieces WHERE id = ?', [piece_id])
+      end
+    end
+
+    db.execute('DELETE FROM accounts WHERE id = ?', [account_id])
+    db.commit
+  rescue SQLite3::SQLException
+    db.rollback
+    raise
+  end
 end

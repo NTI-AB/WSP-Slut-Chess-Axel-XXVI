@@ -2,7 +2,7 @@ require 'sqlite3'
 require 'json'
 require 'time'
 
-DB_PATH = 'databas.db'
+DB_PATH = 'db/databas.db'
 MOVEMENT_JSON_PATH = File.join(__dir__, 'piece_movement.json')
 DEFAULT_PREVIEW_BOARD_JSON = '{"size":8,"placed":[]}'
 DEFAULT_POWER_IDS_JSON = '[]'

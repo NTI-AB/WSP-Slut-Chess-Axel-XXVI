@@ -106,6 +106,12 @@ module QueryModel
   # @return [Array<Hash>]
   def boards_owned_by_account(owner_id); end
 
+  # Delete account and clean up owned boards/pieces.
+  # @param account_id [Integer]
+  # @param now [String]
+  # @return [void]
+  def delete_account_and_owned_content!(account_id:, now:); end
+
   # Fetch any piece by id (ignores ownership, excludes deleted/clones).
   # @param id [Integer]
   # @return [Hash, nil]

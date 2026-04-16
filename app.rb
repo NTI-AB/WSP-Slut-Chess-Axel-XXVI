@@ -8,7 +8,7 @@ require 'json'
 require 'fileutils'
 require 'securerandom'
 
-DB_PATH = 'databas.db'
+DB_PATH = 'db/databas.db'
 ICON_UPLOAD_DIR = File.join('public', 'icons', 'pieces', 'uploads')
 SESSION_SECRET_MIN_LENGTH = 64
 DEFAULT_PREMADE_PIECE_OWNER_ID = 1
@@ -485,6 +485,38 @@ post '/logout' do
   redirect '/pieces'
 end
 
+# @route GET /account
+# Show current account settings page.
+# @return [String] HTML account page
+get '/account' do
+  require_login!
+  @account = current_account
+  slim :account
+end
+
+# @route POST /account/delete
+# Delete current account and owned content.
+# @return [void]
+post '/account/delete' do
+  require_login!
+  account = current_account
+  account_id = account['id'].to_i
+
+  if account_id == default_premade_piece_owner_id
+    set_flash('error', 'Default admin account cannot be deleted.')
+    redirect '/account'
+  end
+
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  delete_account_and_owned_content!(account_id: account_id, now: now)
+  session.delete(:account_id)
+  set_flash('success', 'Account deleted.')
+  redirect '/pieces'
+rescue SQLite3::SQLException => e
+  set_flash('error', "Could not delete account: #{e.message}")
+  redirect '/account'
+end
+
 # @route GET /admin/accounts
 # List all accounts in admin panel.
 # @return [String] HTML admin account list
@@ -524,6 +556,33 @@ get '/admin/accounts/:id/boards' do
 
   @boards = boards_owned_by_account(account_id)
   slim :admin_account_boards
+end
+
+# @route POST /admin/accounts/:id/delete
+# Delete one account and owned content from admin panel.
+# @param [String] id Account id path param
+# @return [void]
+post '/admin/accounts/:id/delete' do
+  require_permission!(:admin_panel)
+  halt 404, 'Account not found' unless params[:id] =~ /\A\d+\z/
+  account_id = params[:id].to_i
+
+  account = account_by_id(account_id)
+  halt 404, 'Account not found' unless account
+
+  if account_id == default_premade_piece_owner_id
+    set_flash('error', 'Default admin account cannot be deleted.')
+    redirect '/admin/accounts'
+  end
+
+  now = Time.now.utc.strftime('%Y-%m-%dT%H:%M:%SZ')
+  delete_account_and_owned_content!(account_id: account_id, now: now)
+  session.delete(:account_id) if session[:account_id].to_i == account_id
+  set_flash('success', "Deleted account ##{account_id}.")
+  redirect '/admin/accounts'
+rescue SQLite3::SQLException => e
+  set_flash('error', "Could not delete account: #{e.message}")
+  redirect '/admin/accounts'
 end
 
 # @route GET /boards

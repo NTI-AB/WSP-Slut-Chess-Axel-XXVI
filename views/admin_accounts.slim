@@ -13,6 +13,12 @@ h1 Admin Panel: Accounts
         a href="/admin/accounts/#{account['id']}/pieces" Pieces
         |  | 
         a href="/admin/accounts/#{account['id']}/boards" Boards
+        |  | 
+        - if account['id'].to_i == default_premade_piece_owner_id
+          span Protected admin
+        - else
+          form action="/admin/accounts/#{account['id']}/delete" method="post" style="display:inline;"
+            button type="submit" Delete account
 
 p
   a href="/pieces" Back to pieces

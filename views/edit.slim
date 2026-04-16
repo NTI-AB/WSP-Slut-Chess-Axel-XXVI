@@ -121,3 +121,7 @@ form action="/pieces/#{@piece['id']}/update" method="post" enctype="multipart/fo
     |  
     a href="/pieces/#{@piece['id']}" Cancel
 script src="/method_config_form.js" defer=true
+
+p
+  form action="/pieces/#{@piece['id']}/delete" method="post"
+    button type="submit" Delete piece

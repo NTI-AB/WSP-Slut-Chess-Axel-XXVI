@@ -33,6 +33,16 @@ module RouteDocs
   # @return [void]
   def post_logout; end
 
+  # Render current account settings.
+  # Route: GET /account
+  # @return [String] HTML
+  def get_account; end
+
+  # Delete current account and owned content.
+  # Route: POST /account/delete
+  # @return [void]
+  def post_account_delete; end
+
   # Admin: list accounts.
   # Route: GET /admin/accounts
   # @return [String] HTML
@@ -49,6 +59,12 @@ module RouteDocs
   # @param id [Integer]
   # @return [String] HTML
   def get_admin_account_boards(id:); end
+
+  # Admin: delete one account and owned content.
+  # Route: POST /admin/accounts/:id/delete
+  # @param id [Integer]
+  # @return [void]
+  def post_admin_account_delete(id:); end
 
   # List visible boards.
   # Route: GET /boards

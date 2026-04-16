@@ -1,0 +1,24 @@
+h1 Account
+
+p
+  strong Username:
+  |  #{@account['username']}
+
+p
+  strong Email:
+  |  #{@account['email']}
+
+p
+  strong Role:
+  |  #{@account['role']}
+
+- if @account['id'].to_i == default_premade_piece_owner_id
+  p Default admin account is protected and cannot be deleted.
+- else
+  h2 Delete Account
+  p This deletes your account, removes your boards, and removes pieces that are not used by other boards.
+  form action="/account/delete" method="post"
+    button type="submit" Delete my account
+
+p
+  a href="/pieces" Back to pieces

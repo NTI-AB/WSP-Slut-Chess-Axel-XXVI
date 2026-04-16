@@ -38,7 +38,7 @@ div class="board-editor board-editor--readonly"
               span class=("board-editor__piece-label #{placement_color == 'white' ? 'is-white' : 'is-black'}")
                 = piece ? piece['name'][0, 1].upcase : '?'
 
-- if @board['owner_id'].to_i == owner_id
+- if admin? || @board['owner_id'].to_i == owner_id
   p
     a href="/boards/#{@board['id']}/edit" Edit board
 

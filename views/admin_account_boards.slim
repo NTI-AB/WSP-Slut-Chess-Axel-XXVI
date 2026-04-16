@@ -9,6 +9,11 @@ h1 = "Admin: Boards for #{@account['username']} (##{@account['id']})"
         a href="/boards/#{board['id']}" = "#{board['name']} (##{board['id']})"
         |  - size: #{board['board_size']}
         |  - #{board['is_public'].to_i == 1 ? 'public' : 'private'}
+        |  - 
+        a href="/boards/#{board['id']}/edit" Edit
+        |  | 
+        form action="/boards/#{board['id']}/delete" method="post" style="display:inline;"
+          button type="submit" Delete
 
 p
   a href="/admin/accounts" Back to accounts

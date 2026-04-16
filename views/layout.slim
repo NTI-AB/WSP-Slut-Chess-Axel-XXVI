@@ -19,6 +19,8 @@ html
         - if @current_account['role'].to_s == 'admin'
           a href="/admin/accounts" Admin panel
           |  | 
+        a href="/account" Account
+        |  | 
         span Logged in as #{@current_account['username']}
         |  | 
         form action="/logout" method="post" style="display:inline;"
