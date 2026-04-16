@@ -364,17 +364,25 @@ before do
   @current_account = current_account
 end
 
-# Root redirects to pieces index.
+# @route GET /
+# Redirect root to the pieces list.
+# @return [void]
 get '/' do
   redirect '/pieces'
 end
 
-# Shows login page.
+# @route GET /login
+# Render login form.
+# @return [String] HTML login page
 get '/login' do
   slim :login
 end
 
-# Authenticates user and stores account id in session.
+# @route POST /login
+# Authenticate account credentials and set session.
+# @param [String] email Account email
+# @param [String] password Plain text password
+# @return [void]
 post '/login' do
   email = params[:email].to_s.strip.downcase
   password = params[:password].to_s
@@ -418,12 +426,20 @@ rescue SQLite3::SQLException
   redirect '/login'
 end
 
-# Shows register page.
+# @route GET /register
+# Render registration form.
+# @return [String] HTML register page
 get '/register' do
   slim :register
 end
 
-# Creates account and logs in directly.
+# @route POST /register
+# Create a new account and login directly.
+# @param [String] username Account username
+# @param [String] email Account email
+# @param [String] password Plain text password
+# @param [String] confirm Password confirmation
+# @return [void]
 post '/register' do
   username = params[:username].to_s.strip
   email = params[:email].to_s.strip.downcase
@@ -460,21 +476,28 @@ rescue SQLite3::SQLException
   redirect '/register'
 end
 
-# Clears login session.
+# @route POST /logout
+# Clear current login session.
+# @return [void]
 post '/logout' do
   session.delete(:account_id)
   set_flash('success', 'Logged out.')
   redirect '/pieces'
 end
 
-# Admin panel: list all accounts.
+# @route GET /admin/accounts
+# List all accounts in admin panel.
+# @return [String] HTML admin account list
 get '/admin/accounts' do
   require_permission!(:admin_panel)
   @accounts = admin_accounts_list
   slim :admin_accounts
 end
 
-# Admin panel: show one account's owned pieces.
+# @route GET /admin/accounts/:id/pieces
+# Show pieces owned by one account.
+# @param [String] id Account id path param
+# @return [String] HTML admin pieces list
 get '/admin/accounts/:id/pieces' do
   require_permission!(:admin_panel)
   halt 404, 'Account not found' unless params[:id] =~ /\A\d+\z/
@@ -487,7 +510,10 @@ get '/admin/accounts/:id/pieces' do
   slim :admin_account_pieces
 end
 
-# Admin panel: show one account's owned boards.
+# @route GET /admin/accounts/:id/boards
+# Show boards owned by one account.
+# @param [String] id Account id path param
+# @return [String] HTML admin boards list
 get '/admin/accounts/:id/boards' do
   require_permission!(:admin_panel)
   halt 404, 'Account not found' unless params[:id] =~ /\A\d+\z/
@@ -500,7 +526,10 @@ get '/admin/accounts/:id/boards' do
   slim :admin_account_boards
 end
 
-# Lists active boards for current owner.
+# @route GET /boards
+# List visible boards for current role and toggle.
+# @param [String, nil] show_public Optional toggle query ("1" enables public feed)
+# @return [String] HTML board list
 get '/boards' do
   require_permission!(:board_read, owner_id: default_premade_piece_owner_id, is_public: true)
   owner_id = current_owner_id
@@ -509,7 +538,9 @@ get '/boards' do
   slim :boards_index
 end
 
-# Renders board creation form with simple click placement editor.
+# @route GET /boards/new
+# Render board creation form.
+# @return [String] HTML new board form
 get '/boards/new' do
   require_permission!(:board_create)
   owner_id = current_owner_id
@@ -525,7 +556,14 @@ get '/boards/new' do
   slim :boards_new
 end
 
-# Creates a board from submitted editor JSON.
+# @route POST /boards
+# Create board and sync related board_piece_links.
+# @param [String] name Board name
+# @param [String] description Board description
+# @param [String] board_size Board size input
+# @param [String] placements_json JSON placements payload
+# @param [String, nil] is_public "1" if board should be public
+# @return [void]
 post '/boards' do
   require_permission!(:board_create)
   owner_id = current_owner_id
@@ -562,7 +600,10 @@ rescue SQLite3::SQLException => e
   halt 500, "Could not create board: #{e.message}"
 end
 
-# Shows one board in read-only mode.
+# @route GET /boards/:id
+# Show one board in read-only mode.
+# @param [String] id Board id path param
+# @return [String] HTML board page
 get '/boards/:id' do
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
   owner_id = current_owner_id
@@ -586,7 +627,10 @@ get '/boards/:id' do
   slim :boards_show
 end
 
-# Renders board edit form with current placements loaded.
+# @route GET /boards/:id/edit
+# Render board edit form.
+# @param [String] id Board id path param
+# @return [String] HTML edit board form
 get '/boards/:id/edit' do
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -601,7 +645,15 @@ get '/boards/:id/edit' do
   slim :boards_edit
 end
 
-# Updates a board and replaces its placements JSON.
+# @route POST /boards/:id/update
+# Update board fields and resync board_piece_links.
+# @param [String] id Board id path param
+# @param [String] name Board name
+# @param [String] description Board description
+# @param [String] board_size Board size input
+# @param [String] placements_json JSON placements payload
+# @param [String, nil] is_public "1" if board should be public
+# @return [void]
 post '/boards/:id/update' do
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -643,7 +695,10 @@ rescue SQLite3::SQLException => e
   halt 500, "Could not update board: #{e.message}"
 end
 
-# Soft deletes one board.
+# @route POST /boards/:id/delete
+# Soft delete a board and remove board_piece_links.
+# @param [String] id Board id path param
+# @return [void]
 post '/boards/:id/delete' do
   halt 404, 'Board not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -659,7 +714,10 @@ rescue SQLite3::SQLException => e
   halt 500, "Could not delete board: #{e.message}"
 end
 
-# Lists active pieces.
+# @route GET /pieces
+# List visible pieces for current role and toggle.
+# @param [String, nil] show_public Optional toggle query ("1" enables public feed)
+# @return [String] HTML piece list
 get '/pieces' do
   require_permission!(:piece_read, owner_id: default_premade_piece_owner_id, is_public: true)
   owner_id = current_owner_id
@@ -669,7 +727,9 @@ get '/pieces' do
   slim :index
 end
 
-# Renders new piece form.
+# @route GET /pieces/new
+# Render new piece form.
+# @return [String] HTML new piece form
 get '/pieces/new' do
   require_permission!(:piece_create)
   @movement_methods = movement_methods_all
@@ -677,7 +737,16 @@ get '/pieces/new' do
   slim(:new)
 end
 
-# Creates a piece and its configured movement rows.
+# @route POST /pieces
+# Create piece and related piece_moves rows.
+# @param [String] name Piece name
+# @param [String] description Piece description
+# @param [Hash, nil] icon_file Optional uploaded icon file
+# @param [String, nil] icon_base_color Base icon color ("black" or "white")
+# @param [String, nil] is_public "1" if piece should be public
+# @param [Array<String>, nil] method_ids Selected movement method ids
+# @param [Array<String>, nil] power_ids Selected power ids
+# @return [void]
 post '/pieces' do
   require_permission!(:piece_create)
   owner_id = current_owner_id
@@ -762,7 +831,10 @@ rescue SQLite3::SQLException => e
   halt 500, "Could not create piece: #{e.message}"
 end
 
-# Renders edit form with current move config grouped per method.
+# @route GET /pieces/:id/edit
+# Render edit form for one piece.
+# @param [String] id Piece id path param
+# @return [String] HTML edit piece form
 get '/pieces/:id/edit' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -803,7 +875,17 @@ get '/pieces/:id/edit' do
   slim :edit
 end
 
-# Updates piece fields and rewrites its movement rows.
+# @route POST /pieces/:id/update
+# Update piece and fully rewrite piece_moves rows.
+# @param [String] id Piece id path param
+# @param [String] name Piece name
+# @param [String] description Piece description
+# @param [Hash, nil] icon_file Optional uploaded icon file
+# @param [String, nil] icon_base_color Base icon color ("black" or "white")
+# @param [String, nil] is_public "1" if piece should be public
+# @param [Array<String>, nil] method_ids Selected movement method ids
+# @param [Array<String>, nil] power_ids Selected power ids
+# @return [void]
 post '/pieces/:id/update' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -894,7 +976,10 @@ rescue SQLite3::SQLException => e
   halt 500, "Could not update piece: #{e.message}"
 end
 
-# Deletes one piece.
+# @route POST /pieces/:id/delete
+# Delete piece or detach owner when piece is linked by boards.
+# @param [String] id Piece id path param
+# @return [void]
 post '/pieces/:id/delete' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i
@@ -914,7 +999,10 @@ post '/pieces/:id/delete' do
   redirect '/pieces'
 end
 
-# Shows one piece with powers, moves, and preview payload.
+# @route GET /pieces/:id
+# Show one piece with powers, move rows, and preview payload.
+# @param [String] id Piece id path param
+# @return [String] HTML piece detail page
 get '/pieces/:id' do
   halt 404, 'Piece not found' unless params[:id] =~ /\A\d+\z/
   id = params[:id].to_i

@@ -1,0 +1,7 @@
+model/core.rb 8714da036af22601db538525661b0943160a19f9
+model/boards.rb f5557c583ca77bca960372715313293837acd7ee
+model/pieces.rb f55b71cedf03ff23350124567ee7a9096574106f
+model/schema.rb b52dc53aafdb5cc57e196de7921f4db410f68ae1
+model/accounts.rb 34ac8307ed6b578ddd0a5bc53b9deefef48c9f6f
+docs/yard_models.rb 131695a66b188a15adbbf925977b37986115d40b
+docs/yard_routes.rb ebe046dd65ac2403b542562503388a026618d10c

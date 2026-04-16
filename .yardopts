@@ -1,0 +1,6 @@
+--output-dir docs/yard
+--readme README.md
+--title WSP Chess Documentation
+model
+docs/yard_models.rb
+docs/yard_routes.rb

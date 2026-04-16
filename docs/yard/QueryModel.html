@@ -1,0 +1,4628 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  Module: QueryModel
+  
+    &mdash; WSP
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css">
+
+  <link rel="stylesheet" href="css/common.css" type="text/css">
+
+<script type="text/javascript">
+  pathId = "QueryModel";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="class_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="main_progress" aria-hidden="true"></div>
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index (Q)</a> &raquo;
+    
+    
+    <span class="title">QueryModel</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><h1>Module: QueryModel
+  
+  
+  
+</h1>
+<div class="box_info">
+  
+
+  
+  
+  
+  
+  
+
+  
+
+  
+  <dl>
+    <dt>Defined in:</dt>
+    <dd>docs/yard_models.rb<span class="defines">,<br>
+  model/core.rb,<br> model/boards.rb,<br> model/pieces.rb,<br> model/accounts.rb</span>
+
+</dd>
+  </dl>
+  
+</div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>YARD-only API documentation for query methods used by controllers/helpers.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+
+</div>
+
+
+
+
+
+
+  
+    <h2>
+      Instance Method Summary
+      <small><a href="#" class="summary_toggle">collapse</a></small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#account_by_id-instance_method" title="#account_by_id (instance method)">#<strong>account_by_id</strong>(id)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch one account by id.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#account_exists_by_email%3F-instance_method" title="#account_exists_by_email? (instance method)">#<strong>account_exists_by_email?</strong>(email)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if account email already exists.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#admin_accounts_list-instance_method" title="#admin_accounts_list (instance method)">#<strong>admin_accounts_list</strong>  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List all accounts for admin panel.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#available_pieces_for_owner-instance_method" title="#available_pieces_for_owner (instance method)">#<strong>available_pieces_for_owner</strong>(owner_id)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List selectable pieces for editor forms.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#board_by_id_any-instance_method" title="#board_by_id_any (instance method)">#<strong>board_by_id_any</strong>(id)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch any board by id (ignores ownership).</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#board_owned_by_id_for_owner-instance_method" title="#board_owned_by_id_for_owner (instance method)">#<strong>board_owned_by_id_for_owner</strong>(id, owner_id)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch one board owned by owner id.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#board_visible_by_id_for_owner-instance_method" title="#board_visible_by_id_for_owner (instance method)">#<strong>board_visible_by_id_for_owner</strong>(id, owner_id)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch one board if visible to current owner (default/public/own).</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#boards_for_owner-instance_method" title="#boards_for_owner (instance method)">#<strong>boards_for_owner</strong>(owner_id, show_public: false)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List boards visible in list page.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#boards_owned_by_account-instance_method" title="#boards_owned_by_account (instance method)">#<strong>boards_owned_by_account</strong>(owner_id)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List boards owned by one account.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#create_account!-instance_method" title="#create_account! (instance method)">#<strong>create_account!</strong>(username:, email:, password_hash:, now:)  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Insert account row and return created id.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#create_board_with_links!-instance_method" title="#create_board_with_links! (instance method)">#<strong>create_board_with_links!</strong>(owner_id:, name:, description:, board_size:, placements:, is_public:, now:)  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Create board row and sync relation links.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#create_piece_record!-instance_method" title="#create_piece_record! (instance method)">#<strong>create_piece_record!</strong>(owner_id:, name:, description:, image_path:, icon_base_color:, is_public:, power_ids_json:, now:)  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Insert piece row and return id.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#current_account-instance_method" title="#current_account (instance method)">#<strong>current_account</strong>  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch current logged-in account from session.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delete_board_piece_links!-instance_method" title="#delete_board_piece_links! (instance method)">#<strong>delete_board_piece_links!</strong>(board_id)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Remove all board_piece_links for one board.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#delete_piece_moves_for_piece!-instance_method" title="#delete_piece_moves_for_piece! (instance method)">#<strong>delete_piece_moves_for_piece!</strong>(piece_id)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Remove all move rows for one piece.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#find_account_by_email-instance_method" title="#find_account_by_email (instance method)">#<strong>find_account_by_email</strong>(email)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Find account by email.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#hard_delete_piece!-instance_method" title="#hard_delete_piece! (instance method)">#<strong>hard_delete_piece!</strong>(piece_id)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Permanently delete piece row.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#insert_piece_move_row!-instance_method" title="#insert_piece_move_row! (instance method)">#<strong>insert_piece_move_row!</strong>(piece_id:, method:, ray_limit:, mode:, color_scope:, first_move_only:, now:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Insert one row in piece_moves.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#log_login_attempt!-instance_method" title="#log_login_attempt! (instance method)">#<strong>log_login_attempt!</strong>(email:, ip_address:, success:, now:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Insert one login attempt event.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#mark_piece_as_detached!-instance_method" title="#mark_piece_as_detached! (instance method)">#<strong>mark_piece_as_detached!</strong>(piece_id:, now:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Mark piece as detached (kept for boards) by setting owner_id = -1.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#movement_method_map-instance_method" title="#movement_method_map (instance method)">#<strong>movement_method_map</strong>(method_ids)  &#x21d2; Hash{Integer=&gt;Hash} </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Build id=&gt;movement_method hash map.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#movement_methods_all-instance_method" title="#movement_methods_all (instance method)">#<strong>movement_methods_all</strong>  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List all movement methods.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#piece_by_id_any-instance_method" title="#piece_by_id_any (instance method)">#<strong>piece_by_id_any</strong>(id)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch any piece by id (ignores ownership, excludes deleted/clones).</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#piece_ids_from_placements-instance_method" title="#piece_ids_from_placements (instance method)">#<strong>piece_ids_from_placements</strong>(placements)  &#x21d2; Array&lt;Integer&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Extract unique piece ids from placements JSON structure.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#piece_linked_to_any_board%3F-instance_method" title="#piece_linked_to_any_board? (instance method)">#<strong>piece_linked_to_any_board?</strong>(piece_id)  &#x21d2; Boolean </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Check if piece is linked by any board.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#piece_move_rows_for_piece-instance_method" title="#piece_move_rows_for_piece (instance method)">#<strong>piece_move_rows_for_piece</strong>(piece_id)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List raw piece move rows for edit form grouping.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#piece_moves_for_show-instance_method" title="#piece_moves_for_show (instance method)">#<strong>piece_moves_for_show</strong>(piece_id)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List piece moves with movement method join for show page.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#piece_owned_by_id_for_owner-instance_method" title="#piece_owned_by_id_for_owner (instance method)">#<strong>piece_owned_by_id_for_owner</strong>(id, owner_id)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch one piece owned by owner id.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#piece_visible_by_id_for_owner-instance_method" title="#piece_visible_by_id_for_owner (instance method)">#<strong>piece_visible_by_id_for_owner</strong>(id, owner_id)  &#x21d2; Hash<sup>?</sup> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch one piece if visible to current owner (default/public/own).</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pieces_by_ids-instance_method" title="#pieces_by_ids (instance method)">#<strong>pieces_by_ids</strong>(piece_ids)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch many pieces by id list.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pieces_for_owner-instance_method" title="#pieces_for_owner (instance method)">#<strong>pieces_for_owner</strong>(owner_id, show_public: false)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List pieces visible in list page.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#pieces_owned_by_account-instance_method" title="#pieces_owned_by_account (instance method)">#<strong>pieces_owned_by_account</strong>(owner_id)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List pieces owned by one account.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#powers_all-instance_method" title="#powers_all (instance method)">#<strong>powers_all</strong>  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>List all powers.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#recent_failed_login_attempts-instance_method" title="#recent_failed_login_attempts (instance method)">#<strong>recent_failed_login_attempts</strong>(email:, ip_address:, since:)  &#x21d2; Integer </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Count failed login attempts in a time window.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#soft_delete_board_with_links!-instance_method" title="#soft_delete_board_with_links! (instance method)">#<strong>soft_delete_board_with_links!</strong>(id:, now:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Soft-delete board and remove relation links.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#special_powers_by_ids-instance_method" title="#special_powers_by_ids (instance method)">#<strong>special_powers_by_ids</strong>(power_ids)  &#x21d2; Array&lt;Hash&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Fetch power rows by ids.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#sync_board_piece_links!-instance_method" title="#sync_board_piece_links! (instance method)">#<strong>sync_board_piece_links!</strong>(board_id, placements, now: Time.now.utc.strftime(&#39;%Y-%m-%dT%H:%M:%SZ&#39;))  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Sync board_piece_links rows from current placements.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#update_board_with_links!-instance_method" title="#update_board_with_links! (instance method)">#<strong>update_board_with_links!</strong>(id:, name:, description:, board_size:, placements:, is_public:, now:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Update board row and sync relation links.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#update_piece_record!-instance_method" title="#update_piece_record! (instance method)">#<strong>update_piece_record!</strong>(id:, name:, description:, image_path:, icon_base_color:, is_public:, power_ids_json:, now:)  &#x21d2; void </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Update piece row.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#valid_power_ids-instance_method" title="#valid_power_ids (instance method)">#<strong>valid_power_ids</strong>(selected_power_ids)  &#x21d2; Array&lt;Integer&gt; </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Keep only power ids that exist in DB.</p></div></span>
+  
+</li>
+
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#with_transaction-instance_method" title="#with_transaction (instance method)">#<strong>with_transaction</strong> { ... } &#x21d2; Object </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>Run SQL statements inside a DB transaction.</p></div></span>
+  
+</li>
+
+      
+    </ul>
+    
+  
+
+
+
+  <div id="instance_method_details" class="method_details_list">
+    <h2>Instance Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="account_by_id-instance_method">
+  
+    #<strong>account_by_id</strong>(id)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch one account by id.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+97
+98
+99
+100
+101
+102</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 97</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_account_by_id'>account_by_id</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT id, username, email, role, created_at, updated_at FROM accounts WHERE id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="account_exists_by_email?-instance_method">
+  
+    #<strong>account_exists_by_email?</strong>(email)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if account email already exists.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>email</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 65</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_account_exists_by_email?'>account_exists_by_email?</span><span class='lparen'>(</span><span class='id identifier rubyid_email'>email</span><span class='rparen'>)</span>
+  <span class='op'>!</span><span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT id FROM accounts WHERE email = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_email'>email</span><span class='rbracket'>]</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="admin_accounts_list-instance_method">
+  
+    #<strong>admin_accounts_list</strong>  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List all accounts for admin panel.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+92
+93
+94</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 92</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_admin_accounts_list'>admin_accounts_list</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT id, username, email, role, created_at, updated_at FROM accounts ORDER BY id</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="available_pieces_for_owner-instance_method">
+  
+    #<strong>available_pieces_for_owner</strong>(owner_id)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List selectable pieces for editor forms.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 135</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_available_pieces_for_owner'>available_pieces_for_owner</span><span class='lparen'>(</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_default_owner_id'>default_owner_id</span> <span class='op'>=</span> <span class='id identifier rubyid_default_premade_piece_owner_id'>default_premade_piece_owner_id</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT id, name, image_path, icon_base_color
+</span><span class='tstring_content'>      FROM pieces
+</span><span class='tstring_content'>      WHERE deleted_at IS NULL
+</span><span class='tstring_content'>        AND source_piece_id IS NULL
+</span><span class='tstring_content'>        AND (
+</span><span class='tstring_content'>          owner_id = ?
+</span><span class='tstring_content'>          OR (? &gt; 0 AND owner_id = ?)
+</span><span class='tstring_content'>        )
+</span><span class='tstring_content'>      ORDER BY LOWER(name), id
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_default_owner_id'>default_owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="board_by_id_any-instance_method">
+  
+    #<strong>board_by_id_any</strong>(id)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch any board by id (ignores ownership).</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 263</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_board_by_id_any'>board_by_id_any</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
+</span><span class='tstring_content'>      FROM boards
+</span><span class='tstring_content'>      WHERE id = ?
+</span><span class='tstring_content'>        AND deleted_at IS NULL
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="board_owned_by_id_for_owner-instance_method">
+  
+    #<strong>board_owned_by_id_for_owner</strong>(id, owner_id)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch one board owned by owner id.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 269</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_board_owned_by_id_for_owner'>board_owned_by_id_for_owner</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
+</span><span class='tstring_content'>      FROM boards
+</span><span class='tstring_content'>      WHERE id = ?
+</span><span class='tstring_content'>        AND deleted_at IS NULL
+</span><span class='tstring_content'>        AND owner_id = ?
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="board_visible_by_id_for_owner-instance_method">
+  
+    #<strong>board_visible_by_id_for_owner</strong>(id, owner_id)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch one board if visible to current owner (default/public/own).</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 258</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_board_visible_by_id_for_owner'>board_visible_by_id_for_owner</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_default_owner_id'>default_owner_id</span> <span class='op'>=</span> <span class='id identifier rubyid_default_premade_piece_owner_id'>default_premade_piece_owner_id</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT id, owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at
+</span><span class='tstring_content'>      FROM boards
+</span><span class='tstring_content'>      WHERE id = ?
+</span><span class='tstring_content'>        AND deleted_at IS NULL
+</span><span class='tstring_content'>        AND (
+</span><span class='tstring_content'>          owner_id = ?
+</span><span class='tstring_content'>          OR (? &gt; 0 AND owner_id = ?)
+</span><span class='tstring_content'>          OR is_public = 1
+</span><span class='tstring_content'>        )
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_default_owner_id'>default_owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="boards_for_owner-instance_method">
+  
+    #<strong>boards_for_owner</strong>(owner_id, show_public: false)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List boards visible in list page.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>show_public</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 252</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_boards_for_owner'>boards_for_owner</span><span class='lparen'>(</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='label'>show_public:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_default_owner_id'>default_owner_id</span> <span class='op'>=</span> <span class='id identifier rubyid_default_premade_piece_owner_id'>default_premade_piece_owner_id</span>
+  <span class='id identifier rubyid_show_public_int'>show_public_int</span> <span class='op'>=</span> <span class='id identifier rubyid_show_public'>show_public</span> <span class='op'>?</span> <span class='int'>1</span> <span class='op'>:</span> <span class='int'>0</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT id, name, description, board_size, is_public, created_at, updated_at, owner_id
+</span><span class='tstring_content'>      FROM boards
+</span><span class='tstring_content'>      WHERE deleted_at IS NULL
+</span><span class='tstring_content'>        AND (
+</span><span class='tstring_content'>          owner_id = ?
+</span><span class='tstring_content'>          OR (? &gt; 0 AND owner_id = ?)
+</span><span class='tstring_content'>          OR (? = 1 AND is_public = 1 AND owner_id != ? AND owner_id != ?)
+</span><span class='tstring_content'>        )
+</span><span class='tstring_content'>      ORDER BY id DESC
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_default_owner_id'>default_owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_show_public_int'>show_public_int</span><span class='comma'>,</span> <span class='id identifier rubyid_default_owner_id'>default_owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="boards_owned_by_account-instance_method">
+  
+    #<strong>boards_owned_by_account</strong>(owner_id)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List boards owned by one account.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 107</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_boards_owned_by_account'>boards_owned_by_account</span><span class='lparen'>(</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT id, name, board_size, is_public, created_at, updated_at
+</span><span class='tstring_content'>      FROM boards
+</span><span class='tstring_content'>      WHERE deleted_at IS NULL
+</span><span class='tstring_content'>        AND owner_id = ?
+</span><span class='tstring_content'>      ORDER BY id DESC
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="create_account!-instance_method">
+  
+    #<strong>create_account!</strong>(username:, email:, password_hash:, now:)  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Insert account row and return created id.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>username</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>email</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>password_hash</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+73
+74
+75
+76
+77
+78
+79</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 73</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_create_account!'>create_account!</span><span class='lparen'>(</span><span class='label'>username:</span><span class='comma'>,</span> <span class='label'>email:</span><span class='comma'>,</span> <span class='label'>password_hash:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>INSERT INTO accounts (username, email, password_hash, created_at, updated_at) VALUES (?, ?, ?, ?, ?)</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_username'>username</span><span class='comma'>,</span> <span class='id identifier rubyid_email'>email</span><span class='comma'>,</span> <span class='id identifier rubyid_password_hash'>password_hash</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_last_insert_row_id'>last_insert_row_id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="create_board_with_links!-instance_method">
+  
+    #<strong>create_board_with_links!</strong>(owner_id:, name:, description:, board_size:, placements:, is_public:, now:)  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Create board row and sync relation links.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>name</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>description</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>board_size</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>placements</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>is_public</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 280</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_create_board_with_links!'>create_board_with_links!</span><span class='lparen'>(</span><span class='label'>owner_id:</span><span class='comma'>,</span> <span class='label'>name:</span><span class='comma'>,</span> <span class='label'>description:</span><span class='comma'>,</span> <span class='label'>board_size:</span><span class='comma'>,</span> <span class='label'>placements:</span><span class='comma'>,</span> <span class='label'>is_public:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_board_id'>board_id</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>INSERT INTO boards (owner_id, name, description, board_size, placements_json, is_public, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_description'>description</span><span class='comma'>,</span> <span class='id identifier rubyid_board_size'>board_size</span><span class='comma'>,</span> <span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_generate'>generate</span><span class='lparen'>(</span><span class='id identifier rubyid_placements'>placements</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_is_public'>is_public</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+  <span class='id identifier rubyid_board_id'>board_id</span> <span class='op'>=</span> <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_last_insert_row_id'>last_insert_row_id</span>
+  <span class='id identifier rubyid_sync_board_piece_links!'>sync_board_piece_links!</span><span class='lparen'>(</span><span class='id identifier rubyid_board_id'>board_id</span><span class='comma'>,</span> <span class='id identifier rubyid_placements'>placements</span><span class='comma'>,</span> <span class='label'>now:</span> <span class='id identifier rubyid_now'>now</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_commit'>commit</span>
+  <span class='id identifier rubyid_board_id'>board_id</span>
+<span class='kw'>rescue</span> <span class='const'>SQLite3</span><span class='op'>::</span><span class='const'>SQLException</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_rollback'>rollback</span>
+  <span class='id identifier rubyid_raise'>raise</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="create_piece_record!-instance_method">
+  
+    #<strong>create_piece_record!</strong>(owner_id:, name:, description:, image_path:, icon_base_color:, is_public:, power_ids_json:, now:)  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Insert piece row and return id.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>name</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>description</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>image_path</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>icon_base_color</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>is_public</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>power_ids_json</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+196
+197
+198
+199
+200
+201
+202</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 196</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_create_piece_record!'>create_piece_record!</span><span class='lparen'>(</span><span class='label'>owner_id:</span><span class='comma'>,</span> <span class='label'>name:</span><span class='comma'>,</span> <span class='label'>description:</span><span class='comma'>,</span> <span class='label'>image_path:</span><span class='comma'>,</span> <span class='label'>icon_base_color:</span><span class='comma'>,</span> <span class='label'>is_public:</span><span class='comma'>,</span> <span class='label'>power_ids_json:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>INSERT INTO pieces (owner_id, source_piece_id, name, description, image_path, icon_base_color, is_public, power_ids, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='kw'>nil</span><span class='comma'>,</span> <span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_description'>description</span><span class='comma'>,</span> <span class='id identifier rubyid_image_path'>image_path</span><span class='comma'>,</span> <span class='id identifier rubyid_icon_base_color'>icon_base_color</span><span class='comma'>,</span> <span class='id identifier rubyid_is_public'>is_public</span><span class='comma'>,</span> <span class='id identifier rubyid_power_ids_json'>power_ids_json</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_last_insert_row_id'>last_insert_row_id</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="current_account-instance_method">
+  
+    #<strong>current_account</strong>  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch current logged-in account from session.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>Account row or nil when guest.</p></div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 55</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_current_account'>current_account</span>
+  <span class='kw'>return</span> <span class='ivar'>@current_account</span> <span class='kw'>if</span> <span class='kw'>defined?</span><span class='lparen'>(</span><span class='ivar'>@current_account_loaded</span><span class='rparen'>)</span> <span class='op'>&amp;&amp;</span> <span class='ivar'>@current_account_loaded</span>
+  <span class='ivar'>@current_account_loaded</span> <span class='op'>=</span> <span class='kw'>true</span>
+  <span class='ivar'>@current_account</span> <span class='op'>=</span> <span class='kw'>nil</span>
+  <span class='kw'>return</span> <span class='kw'>nil</span> <span class='kw'>unless</span> <span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='symbol'>:account_id</span><span class='rbracket'>]</span>
+
+  <span class='ivar'>@current_account</span> <span class='op'>=</span> <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT id, username, email, role FROM accounts WHERE id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_session'>session</span><span class='lbracket'>[</span><span class='symbol'>:account_id</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>rescue</span> <span class='const'>SQLite3</span><span class='op'>::</span><span class='const'>SQLException</span>
+  <span class='ivar'>@current_account</span> <span class='op'>=</span> <span class='kw'>nil</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delete_board_piece_links!-instance_method">
+  
+    #<strong>delete_board_piece_links!</strong>(board_id)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Remove all board_piece_links for one board.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>board_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+241
+242
+243</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 241</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_delete_board_piece_links!'>delete_board_piece_links!</span><span class='lparen'>(</span><span class='id identifier rubyid_board_id'>board_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>DELETE FROM board_piece_links WHERE board_id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_board_id'>board_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="delete_piece_moves_for_piece!-instance_method">
+  
+    #<strong>delete_piece_moves_for_piece!</strong>(piece_id)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Remove all move rows for one piece.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>piece_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+213
+214
+215</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 213</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_delete_piece_moves_for_piece!'>delete_piece_moves_for_piece!</span><span class='lparen'>(</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>DELETE FROM piece_moves WHERE piece_id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="find_account_by_email-instance_method">
+  
+    #<strong>find_account_by_email</strong>(email)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Find account by email.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>email</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+60
+61
+62</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 60</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_find_account_by_email'>find_account_by_email</span><span class='lparen'>(</span><span class='id identifier rubyid_email'>email</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT id, username, email, role, password_hash FROM accounts WHERE email = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_email'>email</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="hard_delete_piece!-instance_method">
+  
+    #<strong>hard_delete_piece!</strong>(piece_id)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Permanently delete piece row.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>piece_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+224
+225
+226</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 224</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_hard_delete_piece!'>hard_delete_piece!</span><span class='lparen'>(</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>DELETE FROM pieces WHERE id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="insert_piece_move_row!-instance_method">
+  
+    #<strong>insert_piece_move_row!</strong>(piece_id:, method:, ray_limit:, mode:, color_scope:, first_move_only:, now:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Insert one row in piece_moves.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>piece_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>method</span>
+      
+      
+        <span class='type'>(<tt>Hash</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ray_limit</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>mode</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>color_scope</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>first_move_only</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 166</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_insert_piece_move_row!'>insert_piece_move_row!</span><span class='lparen'>(</span><span class='label'>piece_id:</span><span class='comma'>,</span> <span class='label'>method:</span><span class='comma'>,</span> <span class='label'>ray_limit:</span><span class='comma'>,</span> <span class='label'>mode:</span><span class='comma'>,</span> <span class='label'>color_scope:</span><span class='comma'>,</span> <span class='label'>first_move_only:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>INSERT INTO piece_moves (piece_id, movement_method_id, name, kind, vectors_json, ray_limit, mode, color_scope, first_move_only, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span>
+      <span class='id identifier rubyid_piece_id'>piece_id</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_method'>method</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>id</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_method'>method</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>name</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_method'>method</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>kind</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_method'>method</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>vectors_json</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_ray_limit'>ray_limit</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_mode'>mode</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_color_scope'>color_scope</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_first_move_only'>first_move_only</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_now'>now</span><span class='comma'>,</span>
+      <span class='id identifier rubyid_now'>now</span>
+    <span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="log_login_attempt!-instance_method">
+  
+    #<strong>log_login_attempt!</strong>(email:, ip_address:, success:, now:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Insert one login attempt event.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>email</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ip_address</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>success</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+81
+82
+83
+84
+85
+86</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 81</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_log_login_attempt!'>log_login_attempt!</span><span class='lparen'>(</span><span class='label'>email:</span><span class='comma'>,</span> <span class='label'>ip_address:</span><span class='comma'>,</span> <span class='label'>success:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>INSERT INTO login_attempts (email, ip_address, success, created_at) VALUES (?, ?, ?, ?)</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_email'>email</span><span class='comma'>,</span> <span class='id identifier rubyid_ip_address'>ip_address</span><span class='comma'>,</span> <span class='id identifier rubyid_success'>success</span> <span class='op'>?</span> <span class='int'>1</span> <span class='op'>:</span> <span class='int'>0</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="mark_piece_as_detached!-instance_method">
+  
+    #<strong>mark_piece_as_detached!</strong>(piece_id:, now:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Mark piece as detached (kept for boards) by setting owner_id = -1.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>piece_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+219
+220
+221</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 219</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_mark_piece_as_detached!'>mark_piece_as_detached!</span><span class='lparen'>(</span><span class='label'>piece_id:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>UPDATE pieces SET owner_id = -1, is_public = 0, updated_at = ? WHERE id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_now'>now</span><span class='comma'>,</span> <span class='id identifier rubyid_piece_id'>piece_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="movement_method_map-instance_method">
+  
+    #<strong>movement_method_map</strong>(method_ids)  &#x21d2; <tt>Hash{Integer=&gt;Hash}</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Build id=&gt;movement_method hash map.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>method_ids</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Integer&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash{Integer=&gt;Hash}</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+150
+151
+152
+153
+154
+155
+156</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 150</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_movement_method_map'>movement_method_map</span><span class='lparen'>(</span><span class='id identifier rubyid_method_ids'>method_ids</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='lbrace'>{</span><span class='rbrace'>}</span> <span class='kw'>if</span> <span class='id identifier rubyid_method_ids'>method_ids</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='id identifier rubyid_placeholders'>placeholders</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>?</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='id identifier rubyid_method_ids'>method_ids</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>,</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_methods'>methods</span> <span class='op'>=</span> <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SELECT id, name, kind, vectors_json, supports_ray_limit FROM movement_methods WHERE id IN (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_placeholders'>placeholders</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_method_ids'>method_ids</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_methods'>methods</span><span class='period'>.</span><span class='id identifier rubyid_each_with_object'>each_with_object</span><span class='lparen'>(</span><span class='lbrace'>{</span><span class='rbrace'>}</span><span class='rparen'>)</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_method'>method</span><span class='comma'>,</span> <span class='id identifier rubyid_memo'>memo</span><span class='op'>|</span> <span class='id identifier rubyid_memo'>memo</span><span class='lbracket'>[</span><span class='id identifier rubyid_method'>method</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>id</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='rbracket'>]</span> <span class='op'>=</span> <span class='id identifier rubyid_method'>method</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="movement_methods_all-instance_method">
+  
+    #<strong>movement_methods_all</strong>  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List all movement methods.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+170
+171
+172</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 170</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_movement_methods_all'>movement_methods_all</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT id, key, name, kind, vectors_json, supports_ray_limit, description FROM movement_methods ORDER BY id</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="piece_by_id_any-instance_method">
+  
+    #<strong>piece_by_id_any</strong>(id)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch any piece by id (ignores ownership, excludes deleted/clones).</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+112
+113
+114
+115
+116
+117</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 112</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_piece_by_id_any'>piece_by_id_any</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND source_piece_id IS NULL</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="piece_ids_from_placements-instance_method">
+  
+    #<strong>piece_ids_from_placements</strong>(placements)  &#x21d2; <tt>Array&lt;Integer&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Extract unique piece ids from placements JSON structure.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>placements</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Integer&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 229</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_piece_ids_from_placements'>piece_ids_from_placements</span><span class='lparen'>(</span><span class='id identifier rubyid_placements'>placements</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_placements'>placements</span><span class='period'>.</span><span class='id identifier rubyid_filter_map'>filter_map</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_entry'>entry</span><span class='op'>|</span>
+    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_entry'>entry</span><span class='period'>.</span><span class='id identifier rubyid_is_a?'>is_a?</span><span class='lparen'>(</span><span class='const'>Hash</span><span class='rparen'>)</span>
+    <span class='id identifier rubyid_raw_id'>raw_id</span> <span class='op'>=</span> <span class='id identifier rubyid_entry'>entry</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>piece_id</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>||</span> <span class='id identifier rubyid_entry'>entry</span><span class='lbracket'>[</span><span class='symbol'>:piece_id</span><span class='rbracket'>]</span>
+    <span class='kw'>next</span> <span class='kw'>if</span> <span class='id identifier rubyid_raw_id'>raw_id</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+    <span class='id identifier rubyid_id'>id</span> <span class='op'>=</span> <span class='id identifier rubyid_raw_id'>raw_id</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span>
+    <span class='kw'>next</span> <span class='kw'>unless</span> <span class='id identifier rubyid_id'>id</span><span class='period'>.</span><span class='id identifier rubyid_positive?'>positive?</span>
+    <span class='id identifier rubyid_id'>id</span>
+  <span class='kw'>end</span><span class='period'>.</span><span class='id identifier rubyid_uniq'>uniq</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="piece_linked_to_any_board?-instance_method">
+  
+    #<strong>piece_linked_to_any_board?</strong>(piece_id)  &#x21d2; <tt>Boolean</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Check if piece is linked by any board.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>piece_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+246
+247
+248
+249</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 246</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_piece_linked_to_any_board?'>piece_linked_to_any_board?</span><span class='lparen'>(</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_value'>value</span> <span class='op'>=</span> <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_value'>get_first_value</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT 1 FROM board_piece_links WHERE piece_id = ? LIMIT 1</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='op'>!</span><span class='id identifier rubyid_value'>value</span><span class='period'>.</span><span class='id identifier rubyid_nil?'>nil?</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="piece_move_rows_for_piece-instance_method">
+  
+    #<strong>piece_move_rows_for_piece</strong>(piece_id)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List raw piece move rows for edit form grouping.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>piece_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+179
+180
+181
+182
+183
+184</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 179</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_piece_move_rows_for_piece'>piece_move_rows_for_piece</span><span class='lparen'>(</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT id, movement_method_id, ray_limit, mode, color_scope, first_move_only FROM piece_moves WHERE piece_id = ? ORDER BY id</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="piece_moves_for_show-instance_method">
+  
+    #<strong>piece_moves_for_show</strong>(piece_id)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List piece moves with movement method join for show page.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>piece_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 184</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_piece_moves_for_show'>piece_moves_for_show</span><span class='lparen'>(</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+<span class='tstring_content'>    SELECT pm.id, pm.movement_method_id, pm.name, pm.kind, pm.ray_limit, pm.mode, pm.color_scope, pm.first_move_only, pm.vectors_json,
+</span><span class='tstring_content'>           mm.name AS method_name, mm.description AS method_description
+</span><span class='tstring_content'>    FROM piece_moves pm
+</span><span class='tstring_content'>    LEFT JOIN movement_methods mm ON mm.id = pm.movement_method_id
+</span><span class='tstring_content'>    WHERE pm.piece_id = ?
+</span><span class='tstring_content'>    ORDER BY pm.id
+</span><span class='heredoc_end'>  SQL
+</span><span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="piece_owned_by_id_for_owner-instance_method">
+  
+    #<strong>piece_owned_by_id_for_owner</strong>(id, owner_id)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch one piece owned by owner id.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+124
+125
+126
+127
+128
+129</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 124</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_piece_owned_by_id_for_owner'>piece_owned_by_id_for_owner</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT * FROM pieces WHERE id = ? AND deleted_at IS NULL AND source_piece_id IS NULL AND owner_id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="piece_visible_by_id_for_owner-instance_method">
+  
+    #<strong>piece_visible_by_id_for_owner</strong>(id, owner_id)  &#x21d2; <tt>Hash</tt><sup>?</sup> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch one piece if visible to current owner (default/public/own).</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Hash</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 118</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_piece_visible_by_id_for_owner'>piece_visible_by_id_for_owner</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_default_owner_id'>default_owner_id</span> <span class='op'>=</span> <span class='id identifier rubyid_default_premade_piece_owner_id'>default_premade_piece_owner_id</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_row'>get_first_row</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT *
+</span><span class='tstring_content'>      FROM pieces
+</span><span class='tstring_content'>      WHERE id = ?
+</span><span class='tstring_content'>        AND deleted_at IS NULL
+</span><span class='tstring_content'>        AND source_piece_id IS NULL
+</span><span class='tstring_content'>        AND (
+</span><span class='tstring_content'>          owner_id = ?
+</span><span class='tstring_content'>          OR (? &gt; 0 AND owner_id = ?)
+</span><span class='tstring_content'>          OR is_public = 1
+</span><span class='tstring_content'>        )
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_default_owner_id'>default_owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="pieces_by_ids-instance_method">
+  
+    #<strong>pieces_by_ids</strong>(piece_ids)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch many pieces by id list.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>piece_ids</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Integer&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+140
+141
+142
+143
+144
+145
+146
+147
+148</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 140</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_pieces_by_ids'>pieces_by_ids</span><span class='lparen'>(</span><span class='id identifier rubyid_piece_ids'>piece_ids</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_piece_ids'>piece_ids</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='id identifier rubyid_placeholders'>placeholders</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>?</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='id identifier rubyid_piece_ids'>piece_ids</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>,</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SELECT id, name, image_path, icon_base_color FROM pieces WHERE id IN (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_placeholders'>placeholders</span><span class='embexpr_end'>}</span><span class='tstring_content'>) AND deleted_at IS NULL</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span>
+    <span class='id identifier rubyid_piece_ids'>piece_ids</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="pieces_for_owner-instance_method">
+  
+    #<strong>pieces_for_owner</strong>(owner_id, show_public: false)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List pieces visible in list page.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>show_public</span>
+      
+      
+        <span class='type'>(<tt>Boolean</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>false</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 130</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_pieces_for_owner'>pieces_for_owner</span><span class='lparen'>(</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='label'>show_public:</span> <span class='kw'>false</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_default_owner_id'>default_owner_id</span> <span class='op'>=</span> <span class='id identifier rubyid_default_premade_piece_owner_id'>default_premade_piece_owner_id</span>
+  <span class='id identifier rubyid_show_public_int'>show_public_int</span> <span class='op'>=</span> <span class='id identifier rubyid_show_public'>show_public</span> <span class='op'>?</span> <span class='int'>1</span> <span class='op'>:</span> <span class='int'>0</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT id, name, description, image_path, icon_base_color, created_at, owner_id, is_public
+</span><span class='tstring_content'>      FROM pieces
+</span><span class='tstring_content'>      WHERE deleted_at IS NULL
+</span><span class='tstring_content'>        AND source_piece_id IS NULL
+</span><span class='tstring_content'>        AND (
+</span><span class='tstring_content'>          owner_id = ?
+</span><span class='tstring_content'>          OR (? &gt; 0 AND owner_id = ?)
+</span><span class='tstring_content'>          OR (? = 1 AND is_public = 1 AND owner_id != ? AND owner_id != ?)
+</span><span class='tstring_content'>        )
+</span><span class='tstring_content'>      ORDER BY id
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_default_owner_id'>default_owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_show_public_int'>show_public_int</span><span class='comma'>,</span> <span class='id identifier rubyid_default_owner_id'>default_owner_id</span><span class='comma'>,</span> <span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="pieces_owned_by_account-instance_method">
+  
+    #<strong>pieces_owned_by_account</strong>(owner_id)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List pieces owned by one account.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>owner_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 102</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_pieces_owned_by_account'>pieces_owned_by_account</span><span class='lparen'>(</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='heredoc_beg'>&lt;&lt;~SQL</span><span class='comma'>,</span>
+<span class='tstring_content'>      SELECT id, name, is_public, created_at, updated_at
+</span><span class='tstring_content'>      FROM pieces
+</span><span class='tstring_content'>      WHERE deleted_at IS NULL
+</span><span class='tstring_content'>        AND source_piece_id IS NULL
+</span><span class='tstring_content'>        AND owner_id = ?
+</span><span class='tstring_content'>      ORDER BY id DESC
+</span><span class='heredoc_end'>    SQL
+</span>    <span class='lbracket'>[</span><span class='id identifier rubyid_owner_id'>owner_id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="powers_all-instance_method">
+  
+    #<strong>powers_all</strong>  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>List all powers.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+174
+175
+176</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 174</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_powers_all'>powers_all</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT id, name, description FROM powers ORDER BY id</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="recent_failed_login_attempts-instance_method">
+  
+    #<strong>recent_failed_login_attempts</strong>(email:, ip_address:, since:)  &#x21d2; <tt>Integer</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Count failed login attempts in a time window.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>email</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>ip_address</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>since</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+88
+89
+90
+91
+92
+93</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 88</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_recent_failed_login_attempts'>recent_failed_login_attempts</span><span class='lparen'>(</span><span class='label'>email:</span><span class='comma'>,</span> <span class='label'>ip_address:</span><span class='comma'>,</span> <span class='label'>since:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_get_first_value'>get_first_value</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>SELECT COUNT(*) FROM login_attempts WHERE email = ? AND ip_address = ? AND success = 0 AND created_at &gt;= ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_email'>email</span><span class='comma'>,</span> <span class='id identifier rubyid_ip_address'>ip_address</span><span class='comma'>,</span> <span class='id identifier rubyid_since'>since</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="soft_delete_board_with_links!-instance_method">
+  
+    #<strong>soft_delete_board_with_links!</strong>(id:, now:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Soft-delete board and remove relation links.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+297
+298
+299
+300
+301
+302
+303
+304
+305</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 297</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_soft_delete_board_with_links!'>soft_delete_board_with_links!</span><span class='lparen'>(</span><span class='label'>id:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>UPDATE boards SET deleted_at = ?, updated_at = ? WHERE id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_now'>now</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='comma'>,</span> <span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_delete_board_piece_links!'>delete_board_piece_links!</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_commit'>commit</span>
+<span class='kw'>rescue</span> <span class='const'>SQLite3</span><span class='op'>::</span><span class='const'>SQLException</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_rollback'>rollback</span>
+  <span class='id identifier rubyid_raise'>raise</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="special_powers_by_ids-instance_method">
+  
+    #<strong>special_powers_by_ids</strong>(power_ids)  &#x21d2; <tt>Array&lt;Hash&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Fetch power rows by ids.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>power_ids</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Integer&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+145
+146
+147
+148
+149
+150</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 145</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_special_powers_by_ids'>special_powers_by_ids</span><span class='lparen'>(</span><span class='id identifier rubyid_power_ids'>power_ids</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_power_ids'>power_ids</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='id identifier rubyid_placeholders'>placeholders</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>?</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='id identifier rubyid_power_ids'>power_ids</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>,</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SELECT id, name, description FROM powers WHERE id IN (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_placeholders'>placeholders</span><span class='embexpr_end'>}</span><span class='tstring_content'>) ORDER BY id</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_power_ids'>power_ids</span><span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="sync_board_piece_links!-instance_method">
+  
+    #<strong>sync_board_piece_links!</strong>(board_id, placements, now: Time.now.utc.strftime(&#39;%Y-%m-%dT%H:%M:%SZ&#39;))  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Sync board_piece_links rows from current placements.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>board_id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>placements</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+        <em class="default">(defaults to: <tt>Time.now.utc.strftime(&#39;%Y-%m-%dT%H:%M:%SZ&#39;)</tt>)</em>
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 236</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_sync_board_piece_links!'>sync_board_piece_links!</span><span class='lparen'>(</span><span class='id identifier rubyid_board_id'>board_id</span><span class='comma'>,</span> <span class='id identifier rubyid_placements'>placements</span><span class='comma'>,</span> <span class='label'>now:</span> <span class='const'>Time</span><span class='period'>.</span><span class='id identifier rubyid_now'>now</span><span class='period'>.</span><span class='id identifier rubyid_utc'>utc</span><span class='period'>.</span><span class='id identifier rubyid_strftime'>strftime</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>%Y-%m-%dT%H:%M:%SZ</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_ids'>ids</span> <span class='op'>=</span> <span class='id identifier rubyid_piece_ids_from_placements'>piece_ids_from_placements</span><span class='lparen'>(</span><span class='id identifier rubyid_placements'>placements</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>DELETE FROM board_piece_links WHERE board_id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span> <span class='lbracket'>[</span><span class='id identifier rubyid_board_id'>board_id</span><span class='rbracket'>]</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_ids'>ids</span><span class='period'>.</span><span class='id identifier rubyid_each'>each</span> <span class='kw'>do</span> <span class='op'>|</span><span class='id identifier rubyid_piece_id'>piece_id</span><span class='op'>|</span>
+    <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+      <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>INSERT OR IGNORE INTO board_piece_links (board_id, piece_id, created_at) VALUES (?, ?, ?)</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+      <span class='lbracket'>[</span><span class='id identifier rubyid_board_id'>board_id</span><span class='comma'>,</span> <span class='id identifier rubyid_piece_id'>piece_id</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='rbracket'>]</span>
+    <span class='rparen'>)</span>
+  <span class='kw'>end</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="update_board_with_links!-instance_method">
+  
+    #<strong>update_board_with_links!</strong>(id:, name:, description:, board_size:, placements:, is_public:, now:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Update board row and sync relation links.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>name</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>description</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>board_size</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>placements</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Hash&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>is_public</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 291</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_update_board_with_links!'>update_board_with_links!</span><span class='lparen'>(</span><span class='label'>id:</span><span class='comma'>,</span> <span class='label'>name:</span><span class='comma'>,</span> <span class='label'>description:</span><span class='comma'>,</span> <span class='label'>board_size:</span><span class='comma'>,</span> <span class='label'>placements:</span><span class='comma'>,</span> <span class='label'>is_public:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>UPDATE boards SET name = ?, description = ?, board_size = ?, placements_json = ?, is_public = ?, updated_at = ? WHERE id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_description'>description</span><span class='comma'>,</span> <span class='id identifier rubyid_board_size'>board_size</span><span class='comma'>,</span> <span class='const'>JSON</span><span class='period'>.</span><span class='id identifier rubyid_generate'>generate</span><span class='lparen'>(</span><span class='id identifier rubyid_placements'>placements</span><span class='rparen'>)</span><span class='comma'>,</span> <span class='id identifier rubyid_is_public'>is_public</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='comma'>,</span> <span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+  <span class='id identifier rubyid_sync_board_piece_links!'>sync_board_piece_links!</span><span class='lparen'>(</span><span class='id identifier rubyid_id'>id</span><span class='comma'>,</span> <span class='id identifier rubyid_placements'>placements</span><span class='comma'>,</span> <span class='label'>now:</span> <span class='id identifier rubyid_now'>now</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_commit'>commit</span>
+<span class='kw'>rescue</span> <span class='const'>SQLite3</span><span class='op'>::</span><span class='const'>SQLException</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_rollback'>rollback</span>
+  <span class='id identifier rubyid_raise'>raise</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="update_piece_record!-instance_method">
+  
+    #<strong>update_piece_record!</strong>(id:, name:, description:, image_path:, icon_base_color:, is_public:, power_ids_json:, now:)  &#x21d2; <tt>void</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p class="note returns_void">This method returns an undefined value.</p><p>Update piece row.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>id</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>name</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>description</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>image_path</span>
+      
+      
+        <span class='type'>(<tt>String</tt>, <tt>nil</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>icon_base_color</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>is_public</span>
+      
+      
+        <span class='type'>(<tt>Integer</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>power_ids_json</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+    <li>
+      
+        <span class='name'>now</span>
+      
+      
+        <span class='type'>(<tt>String</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+208
+209
+210
+211
+212
+213</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 208</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_update_piece_record!'>update_piece_record!</span><span class='lparen'>(</span><span class='label'>id:</span><span class='comma'>,</span> <span class='label'>name:</span><span class='comma'>,</span> <span class='label'>description:</span><span class='comma'>,</span> <span class='label'>image_path:</span><span class='comma'>,</span> <span class='label'>icon_base_color:</span><span class='comma'>,</span> <span class='label'>is_public:</span><span class='comma'>,</span> <span class='label'>power_ids_json:</span><span class='comma'>,</span> <span class='label'>now:</span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span>
+    <span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>UPDATE pieces SET name = ?, description = ?, image_path = ?, icon_base_color = ?, is_public = ?, power_ids = ?, updated_at = ? WHERE id = ?</span><span class='tstring_end'>&#39;</span></span><span class='comma'>,</span>
+    <span class='lbracket'>[</span><span class='id identifier rubyid_name'>name</span><span class='comma'>,</span> <span class='id identifier rubyid_description'>description</span><span class='comma'>,</span> <span class='id identifier rubyid_image_path'>image_path</span><span class='comma'>,</span> <span class='id identifier rubyid_icon_base_color'>icon_base_color</span><span class='comma'>,</span> <span class='id identifier rubyid_is_public'>is_public</span><span class='comma'>,</span> <span class='id identifier rubyid_power_ids_json'>power_ids_json</span><span class='comma'>,</span> <span class='id identifier rubyid_now'>now</span><span class='comma'>,</span> <span class='id identifier rubyid_id'>id</span><span class='rbracket'>]</span>
+  <span class='rparen'>)</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="valid_power_ids-instance_method">
+  
+    #<strong>valid_power_ids</strong>(selected_power_ids)  &#x21d2; <tt>Array&lt;Integer&gt;</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Keep only power ids that exist in DB.</p>
+
+  </div>
+</div>
+<div class="tags">
+  <p class="tag_title">Parameters:</p>
+<ul class="param">
+  
+    <li>
+      
+        <span class='name'>selected_power_ids</span>
+      
+      
+        <span class='type'>(<tt>Array&lt;Integer&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array&lt;Integer&gt;</tt>)</span>
+      
+      
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+155
+156
+157
+158
+159
+160</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 155</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_valid_power_ids'>valid_power_ids</span><span class='lparen'>(</span><span class='id identifier rubyid_selected_power_ids'>selected_power_ids</span><span class='rparen'>)</span>
+  <span class='kw'>return</span> <span class='lbracket'>[</span><span class='rbracket'>]</span> <span class='kw'>if</span> <span class='id identifier rubyid_selected_power_ids'>selected_power_ids</span><span class='period'>.</span><span class='id identifier rubyid_empty?'>empty?</span>
+
+  <span class='id identifier rubyid_placeholders'>placeholders</span> <span class='op'>=</span> <span class='lparen'>(</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>?</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span> <span class='op'>*</span> <span class='id identifier rubyid_selected_power_ids'>selected_power_ids</span><span class='period'>.</span><span class='id identifier rubyid_length'>length</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_join'>join</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>,</span><span class='tstring_end'>&#39;</span></span><span class='rparen'>)</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_execute'>execute</span><span class='lparen'>(</span><span class='tstring'><span class='tstring_beg'>&quot;</span><span class='tstring_content'>SELECT id FROM powers WHERE id IN (</span><span class='embexpr_beg'>#{</span><span class='id identifier rubyid_placeholders'>placeholders</span><span class='embexpr_end'>}</span><span class='tstring_content'>)</span><span class='tstring_end'>&quot;</span></span><span class='comma'>,</span> <span class='id identifier rubyid_selected_power_ids'>selected_power_ids</span><span class='rparen'>)</span><span class='period'>.</span><span class='id identifier rubyid_map'>map</span> <span class='lbrace'>{</span> <span class='op'>|</span><span class='id identifier rubyid_row'>row</span><span class='op'>|</span> <span class='id identifier rubyid_row'>row</span><span class='lbracket'>[</span><span class='tstring'><span class='tstring_beg'>&#39;</span><span class='tstring_content'>id</span><span class='tstring_end'>&#39;</span></span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_to_i'>to_i</span> <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+      <div class="method_details ">
+  <h3 class="signature " id="with_transaction-instance_method">
+  
+    #<strong>with_transaction</strong> { ... } &#x21d2; <tt>Object</tt> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Run SQL statements inside a DB transaction.</p>
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Yields:</p>
+<ul class="yield">
+  
+    <li>
+      
+      
+        <span class='type'></span>
+      
+      
+      
+        
+        <div class='inline'><p>Transaction body.</p></div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Object</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>The yielded result.</p></div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+51
+52
+53
+54
+55
+56
+57
+58
+59</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'docs/yard_models.rb', line 51</span>
+
+<span class='kw'>def</span> <span class='id identifier rubyid_with_transaction'>with_transaction</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_transaction'>transaction</span>
+  <span class='id identifier rubyid_result'>result</span> <span class='op'>=</span> <span class='kw'>yield</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_commit'>commit</span>
+  <span class='id identifier rubyid_result'>result</span>
+<span class='kw'>rescue</span> <span class='const'>SQLite3</span><span class='op'>::</span><span class='const'>SQLException</span>
+  <span class='id identifier rubyid_db'>db</span><span class='period'>.</span><span class='id identifier rubyid_rollback'>rollback</span>
+  <span class='id identifier rubyid_raise'>raise</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+      <div id="footer">
+  Generated on Thu Apr 16 09:39:47 2026 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.41 (ruby-3.3.4).
+</div>
+
+    </div>
+  </body>
+</html>
